@@ -6,6 +6,9 @@
 `define LAB1_IMUL_INT_MUL_BASE_V
 
 `include "vc/trace.v"
+`include "vc/muxes.v"
+`include "vc/regs.v"
+`include "vc/arithmetic.v"
 
 // ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 // Define datapath and control unit here.
@@ -29,7 +32,9 @@ module lab1_imul_DatapathUnitBase
   output logic        b_lsb
 );
 
-  logic [31:0] result_adder_cout_null;
+  /* verilator lint_off unused */
+  logic result_adder_cout_null;
+  /* verilator lint_on unused */
 
   // Circuit for b
   logic [31:0] b_mux_out;
@@ -41,8 +46,8 @@ module lab1_imul_DatapathUnitBase
   #(
     .p_nbits(32)
   ) b_mux (
-    .in0(b_reg_out >> 1),
-    .in1(istream_msg[31:0]),
+    .in0(istream_msg[31:0]),
+    .in1(b_reg_out >> 1),
     .sel(b_mux_sel),
     .out(b_mux_out)
   );
@@ -64,8 +69,8 @@ module lab1_imul_DatapathUnitBase
   #(
     .p_nbits(32)
   ) a_mux (
-    .in0(a_reg_out << 1),
-    .in1(istream_msg[63:32]),
+    .in0(istream_msg[63:32]),
+    .in1(a_reg_out << 1),
     .sel(a_mux_sel),
     .out(a_mux_out)
   );
@@ -91,8 +96,8 @@ module lab1_imul_DatapathUnitBase
   #(
     .p_nbits(32)
   ) result_mux (
-    .in0(result_adder_mux_out),
-    .in1(32'b0),
+    .in0(32'b0),
+    .in1(result_adder_mux_out),
     .sel(result_mux_sel),
     .out(result_mux_out)
   );
@@ -112,9 +117,9 @@ module lab1_imul_DatapathUnitBase
   #(
     .p_nbits(32)
   ) result_adder (
-    .in0  (a_reg_out),
-    .in1  (result_reg_out),
-    .cin  (32'b0),
+    .in0  (result_reg_out),
+    .in1  (a_reg_out),
+    .cin  (1'b0),
     .out  (result_adder_out),
     .cout (result_adder_cout_null)
   );
@@ -123,11 +128,130 @@ module lab1_imul_DatapathUnitBase
   #(
     .p_nbits(32)
   ) result_adder_mux (
-    .in0(result_adder_out),
-    .in1(result_reg_out),
+    .in0(result_reg_out),
+    .in1(result_adder_out),
     .sel(add_mux_sel),
     .out(result_adder_mux_out)
   );
+
+endmodule
+
+module lab1_imul_ControlUnitBase
+(
+  input  logic clk,
+  input  logic reset,
+
+  output logic istream_rdy,
+  input  logic istream_val,
+  input  logic ostream_rdy,
+  output logic ostream_val,
+
+  input  logic b_lsb,
+  output logic b_mux_sel,
+  output logic a_mux_sel,
+  output logic result_mux_sel,
+  output logic add_mux_sel,
+  output logic result_en
+);
+
+  typedef enum logic [1:0] {
+    IDLE,
+    CALC,
+    DONE
+  } state_t;
+
+  state_t curr_state;
+  state_t next_state;
+
+  logic [5:0] counter;
+
+  // Change state on clock edge
+  always_ff @(posedge clk)
+  begin
+    if (reset)  curr_state <= IDLE;
+    else        curr_state <= next_state;
+  end
+
+  always_ff @(posedge clk)
+  begin
+    if (reset)                    counter <= 0;
+    else if (curr_state == CALC)  counter <= counter + 1;
+    else                          counter <= 0;
+  end
+
+  // Handle state transitions
+  always_comb
+  begin
+    case (curr_state)
+      IDLE:
+      begin
+        if (!istream_val) next_state = IDLE;
+        else              next_state = CALC;
+      end
+      CALC:
+      begin
+        if (counter < 6'd32)  next_state  = CALC;
+        else                  next_state  = DONE;
+      end
+      DONE:
+      begin
+        if (!ostream_rdy) next_state = DONE;
+        else              next_state = IDLE;
+      end
+      default:
+      begin
+        next_state    = IDLE;
+      end
+    endcase
+  end
+
+  // Handle state output
+  always_comb
+  begin
+    case (curr_state)
+      IDLE:
+      begin
+        b_mux_sel       = 0;
+        result_mux_sel  = 0;
+        a_mux_sel       = 0;
+        result_en       = 1; // should this be 0 or 1?
+        add_mux_sel     = 0;
+        istream_rdy     = 1;
+        ostream_val     = 0;
+      end
+      CALC:
+      begin
+        b_mux_sel       = 1;
+        result_mux_sel  = 1;
+        a_mux_sel       = 1;
+        result_en       = 1;
+        if (b_lsb == 0) add_mux_sel = 0;
+        else            add_mux_sel = 1;
+        istream_rdy     = 0;
+        ostream_val     = 0;
+      end
+      DONE:
+      begin
+        b_mux_sel       = 0;
+        result_mux_sel  = 0;
+        a_mux_sel       = 0;
+        result_en       = 0; // when result_en is zero, it should not matter what any other signal is?
+        add_mux_sel     = 0;
+        istream_rdy     = 0;
+        ostream_val     = 1;
+      end
+      default:
+      begin
+        b_mux_sel       = 0;
+        result_mux_sel  = 0;
+        a_mux_sel       = 0;
+        result_en       = 1; // should this be 0 or 1?
+        add_mux_sel     = 0;
+        istream_rdy     = 0;
+        ostream_val     = 0;
+      end
+    endcase
+  end
 
 endmodule
 
@@ -153,6 +277,49 @@ module lab1_imul_IntMulBase
   // Instantiate datapath and control models here and then connect them
   // together.
   // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+  logic b_lsb;
+  logic b_mux_sel;
+  logic a_mux_sel;
+  logic result_mux_sel;
+  logic add_mux_sel;
+  logic result_en;
+
+  lab1_imul_ControlUnitBase controlUnitBase_I
+  (
+    .clk            (clk),
+    .reset          (reset),
+
+    .istream_rdy    (istream_rdy),
+    .istream_val    (istream_val),
+    .ostream_rdy    (ostream_rdy),
+    .ostream_val    (ostream_val),
+
+    .b_lsb          (b_lsb),
+    .b_mux_sel      (b_mux_sel),
+    .a_mux_sel      (a_mux_sel),
+    .result_mux_sel (result_mux_sel),
+    .add_mux_sel    (add_mux_sel),
+    .result_en      (result_en)
+  );
+
+  lab1_imul_DatapathUnitBase datapathUnitBase_I
+  (
+    .clk            (clk),
+    .reset          (reset),
+
+    .result_mux_sel (result_mux_sel),
+    .a_mux_sel      (a_mux_sel),
+    .b_mux_sel      (b_mux_sel),
+    .add_mux_sel    (add_mux_sel),
+
+    .result_en      (result_en),
+
+    .istream_msg    (istream_msg),
+    .ostream_msg    (ostream_msg),
+
+    .b_lsb          (b_lsb)
+  );
 
   //----------------------------------------------------------------------
   // Line Tracing
