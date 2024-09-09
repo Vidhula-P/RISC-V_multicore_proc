@@ -51,6 +51,13 @@ def mk_imsg( a, b ):
 def mk_omsg( a ):
   return Bits32( a, trunc_int=True )
 
+def mk_imsg_lmask(a, b, num_bits_to_mask): #modified mk_imsg to accomadate masking of lower bits
+  return concat( Bits32( ( a & ( ( (1<<32)-1 )<<num_bits_to_mask) ), trunc_int=True ), Bits32( ( b & ( ( (1<<32)-1 )<<num_bits_to_mask) ), trunc_int=True ) )
+
+def mk_imsg_mmask(a, b, start_bit, end_bit): #modified mk_imsg to accomadate masking of middle bits
+  mask = ((1 << (end_bit - start_bit + 1)) - 1) << start_bit
+  return concat( Bits32( ( a & ~mask ), trunc_int=True ), Bits32( ( b & ~mask), trunc_int=True ) )
+
 #----------------------------------------------------------------------
 # Test Case: small positive * positive
 #----------------------------------------------------------------------
@@ -163,6 +170,16 @@ large_neg_neg_msgs = [
   mk_imsg(  -5000000000,  -6000000000 ), mk_omsg(  30000000000000000000 ),
   mk_imsg( -7000000000, -8000000000 ), mk_omsg( 56000000000000000000 ),
   mk_imsg(  -9000000000,  -1234567890 ), mk_omsg(  11111111010000000000 ),
+]
+
+#----------------------------------------------------------------------
+# Test Case: lower bits masked
+#----------------------------------------------------------------------
+
+low_mask_msgs = [
+  mk_imsg_lmask(  234524,  453 ), mk_omsg(   6283185306000000000 ),
+  mk_imsg_lmask(  8920,  15502 ), mk_omsg(  4294967295000000000 ),
+  mk_imsg_lmask(  7382,  7390 ), mk_omsg(  30000000000000000000 ),
 ]
 
 #-------------------------------------------------------------------------
