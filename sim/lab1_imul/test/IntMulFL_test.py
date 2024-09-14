@@ -51,12 +51,13 @@ def mk_imsg( a, b ):
 def mk_omsg( a ):
   return Bits32( a, trunc_int=True )
 
-def mk_imsg_lmask(a, b, num_bits_to_mask): #modified mk_imsg to accomadate masking of lower bits
-  return concat( Bits32( ( a & ( ( (1<<32)-1 )<<num_bits_to_mask) ), trunc_int=True ), Bits32( ( b & ( ( (1<<32)-1 )<<num_bits_to_mask) ), trunc_int=True ) )
+def mk_imsg_lmask(a, b, num_bits_to_mask): # modified mk_imsg to accomodate masking of lower bits
+  mask = ((1<<32) -1) << num_bits_to_mask
+  return concat( Bits32( ( a & mask ), trunc_int=True ), Bits32( ( b & mask ), trunc_int=True ) )
 
-def mk_imsg_mmask(a, b, start_bit, end_bit): #modified mk_imsg to accomadate masking of middle bits
-  mask = ((1 << (end_bit - start_bit + 1)) - 1) << start_bit
-  return concat( Bits32( ( a & ~mask ), trunc_int=True ), Bits32( ( b & ~mask), trunc_int=True ) )
+def mk_imsg_mmask(a, b, start_bit, end_bit): # modified mk_imsg to accomodate masking of middle bits
+  mask = ~((1 << (end_bit - start_bit + 1)) - 1) << start_bit
+  return concat( Bits32( ( a & mask ), trunc_int=True ), Bits32( ( b & mask ), trunc_int=True ) )
 
 #----------------------------------------------------------------------
 # Test Case: small positive * positive
@@ -76,16 +77,22 @@ small_pos_pos_msgs = [
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 #----------------------------------------------------------------------
-# Test Case: basic 0,1,-1
+# Test Case: basic 0, 1, -1
 #----------------------------------------------------------------------
 
-basic = [
-  mk_imsg(  0,  0 ), mk_omsg(   0),
+basic_msgs = [
+  mk_imsg(  0,  0 ), mk_omsg(  0 ),
   mk_imsg(  1,  1 ), mk_omsg(  1 ),
-  mk_imsg(  -1,  -1 ), mk_omsg(  1 ),
-  mk_imsg( 0, 1 ), mk_omsg( 0 ),
-  mk_imsg(  -1,  0 ), mk_omsg(  0 ),
-  mk_imsg(  -1,  1 ), mk_omsg(  -1 ),
+  mk_imsg( -1, -1 ), mk_omsg(  1 ),
+
+  mk_imsg(  0,  1 ), mk_omsg(  0 ),
+  mk_imsg(  1,  0 ), mk_omsg(  0 ),
+
+  mk_imsg(  0, -1 ), mk_omsg(  0 ),
+  mk_imsg( -1,  0 ), mk_omsg(  0 ),
+
+  mk_imsg(  1, -1 ), mk_omsg( -1 ),
+  mk_imsg( -1,  1 ), mk_omsg( -1 ),
 ]
 
 #----------------------------------------------------------------------
@@ -198,7 +205,7 @@ mid_mask_msgs = [
 
 sparse_msgs = [
   mk_imsg(  4294967296,         65536),  mk_omsg( 281474976710656 ),
-  mk_imsg(  11184640,       279620104),  mk_omsg( 3127450200002560 ),  
+  mk_imsg(  11184640,       279620104),  mk_omsg( 3127450200002560 ),
 ]
 
 #----------------------------------------------------------------------
@@ -223,7 +230,7 @@ test_case_table = mk_test_case_table([
   # of request/response messages defined above, but also to test
   # different source/sink random delays.
   # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  [ "basic",             basic,                  0,        0          ],
+  [ "basic",             basic_msgs,             0,        0          ],
   [ "small_pos_neg",     small_pos_neg_msgs,     0,        0          ],
   [ "small_neg_pos",     small_neg_pos_msgs,     0,        0          ],
   [ "small_neg_neg",     small_neg_neg_msgs,     0,        0          ],
