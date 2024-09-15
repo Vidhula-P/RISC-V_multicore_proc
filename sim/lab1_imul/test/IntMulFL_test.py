@@ -51,13 +51,19 @@ def mk_imsg( a, b ):
 def mk_omsg( a ):
   return Bits32( a, trunc_int=True )
 
-def mk_imsg_lmask(a, b, num_bits_to_mask): # modified mk_imsg to accomodate masking of lower bits
+def perform_lmask(a, num_bits_to_mask):
   mask = ((1<<32) -1) << num_bits_to_mask
-  return concat( Bits32( ( a & mask ), trunc_int=True ), Bits32( ( b & mask ), trunc_int=True ) )
+  return Bits32( ( a & mask ), trunc_int=True)
+
+def mk_imsg_lmask(a, b, num_bits_to_mask): # modified mk_imsg to accomodate masking of lower bits
+  return concat( perform_lmask(a, num_bits_to_mask), perform_lmask(b, num_bits_to_mask) )
+
+def perform_mmask(a, start_bit, end_bit):
+  mask = ~ (((1 << (end_bit - start_bit + 1)) - 1) << start_bit)
+  return Bits32( ( a & mask ), trunc_int=True)
 
 def mk_imsg_mmask(a, b, start_bit, end_bit): # modified mk_imsg to accomodate masking of middle bits
-  mask = ~((1 << (end_bit - start_bit + 1)) - 1) << start_bit
-  return concat( Bits32( ( a & mask ), trunc_int=True ), Bits32( ( b & mask ), trunc_int=True ) )
+  return concat( perform_mmask(a, start_bit, end_bit), perform_mmask(b, start_bit, end_bit) )
 
 #----------------------------------------------------------------------
 # Test Case: small positive * positive
@@ -136,11 +142,17 @@ small_neg_neg_msgs = [
 #----------------------------------------------------------------------
 
 large_pos_pos_msgs = [
+  # Tests that do not cause output to overflow (input up to 16 bits)
+
+
+  # Tests that cause output to overflow (input more than 16 bits)
   mk_imsg(  2000000000,  3141592653 ), mk_omsg(  6283185306000000000 ),
   mk_imsg(  4294967295,  1000000000 ), mk_omsg(  4294967295000000000 ),
   mk_imsg(  5000000000,  6000000000 ), mk_omsg(  30000000000000000000 ),
   mk_imsg(  7000000000,  8000000000 ), mk_omsg(  56000000000000000000 ),
   mk_imsg(  9000000000,  1234567890 ), mk_omsg(  11111111010000000000 ),
+
+  # Maximum 16 bit and 32 bit positive values
 ]
 
 #----------------------------------------------------------------------
@@ -217,6 +229,31 @@ dense_msgs = [
   mk_imsg(  1605348090,    2142153466),   mk_omsg(  3438901975129979940  ),
 ]
 
+random_msgs = [
+]
+
+for _ in range(30):
+  rand_a = randint(-2147483648, 2147483647)
+  print("a")
+  print(rand_a)
+  rand_b = randint(-2147483648, 2147483647)
+
+  # Unmasked
+  random_msgs.extend([mk_imsg(rand_a, rand_b),  mk_omsg(rand_a * rand_b)])
+
+  # Low Mask
+  num_bits_to_mask = randint(0, 32)
+  masked_rand_a = perform_lmask(rand_a, num_bits_to_mask)
+  masked_rand_b = perform_lmask(rand_b, num_bits_to_mask)
+  random_msgs.extend([mk_imsg_lmask(rand_a, rand_b, num_bits_to_mask), mk_omsg(masked_rand_a * masked_rand_b)])
+
+  # Middle Mask
+  start_bit = randint(0, 31)
+  end_bit = randint(start_bit, 31)
+  masked_rand_a = perform_mmask(rand_a, start_bit, end_bit)
+  masked_rand_b = perform_mmask(rand_b, start_bit, end_bit)
+  random_msgs.extend([mk_imsg_mmask(rand_a, rand_b, start_bit, end_bit), mk_omsg(masked_rand_a * masked_rand_b)])
+
 #-------------------------------------------------------------------------
 # Test Case Table
 #-------------------------------------------------------------------------
@@ -224,6 +261,7 @@ dense_msgs = [
 test_case_table = mk_test_case_table([
   (                      "msgs                   src_delay sink_delay"),
   [ "small_pos_pos",     small_pos_pos_msgs,     0,        0          ],
+  [ "small_pos_pos",     small_pos_pos_msgs,     0,        1          ],
 
   # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   # Add more rows to the test case table to leverage the additional lists
@@ -231,17 +269,43 @@ test_case_table = mk_test_case_table([
   # different source/sink random delays.
   # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   [ "basic",             basic_msgs,             0,        0          ],
+  [ "basic",             basic_msgs,             1,        0          ],
+
   [ "small_pos_neg",     small_pos_neg_msgs,     0,        0          ],
+  [ "small_pos_neg",     small_pos_neg_msgs,     0,        2          ],
+
   [ "small_neg_pos",     small_neg_pos_msgs,     0,        0          ],
+  [ "small_neg_pos",     small_neg_pos_msgs,     2,        0          ],
+
   [ "small_neg_neg",     small_neg_neg_msgs,     0,        0          ],
+  [ "small_neg_neg",     small_neg_neg_msgs,     2,        1          ],
+
   [ "large_pos_pos",     large_pos_pos_msgs,     0,        0          ],
+  [ "large_pos_pos",     large_pos_pos_msgs,     1,        2          ],
+
   [ "large_pos_neg",     large_pos_neg_msgs,     0,        0          ],
+  [ "large_pos_neg",     large_pos_neg_msgs,     0,        3          ],
+
   [ "large_neg_pos",     large_neg_pos_msgs,     0,        0          ],
+  [ "large_neg_pos",     large_neg_pos_msgs,     3,        0          ],
+
   [ "large_neg_neg",     large_neg_neg_msgs,     0,        0          ],
+  [ "large_neg_neg",     large_neg_neg_msgs,     3,        5          ],
+
   [ "lower_bits_mask",   low_mask_msgs,          0,        0          ],
+  [ "lower_bits_mask",   low_mask_msgs,          0,       10          ],
+
   [ "middle_bits_mask",  mid_mask_msgs,          0,        0          ],
+  [ "middle_bits_mask",  mid_mask_msgs,         10,        0          ],
+
   [ "sparse_bits",       sparse_msgs,            0,        0          ],
+  [ "sparse_bits",       sparse_msgs,            2,        7          ],
+
   [ "dense_bits",        dense_msgs,             0,        0          ],
+  [ "dense_bits",        dense_msgs,             9,        1          ],
+
+  [ "random_tests",      random_msgs,            0,        0          ],
+  [ "random_tests",      random_msgs,            2,        6          ],
 ])
 
 #-------------------------------------------------------------------------
