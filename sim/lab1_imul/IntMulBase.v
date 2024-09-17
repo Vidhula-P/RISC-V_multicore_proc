@@ -38,19 +38,19 @@ module lab1_imul_DatapathUnitBase
 
   // Circuit for b
   logic [31:0] b_mux_out;
-  logic [31:0] b_reg_out;  
+  logic [31:0] b_reg_out;
   logic [31:0] b_shifted_out;
 
   assign b_lsb = b_reg_out[0];
 
   vc_RightLogicalShifter
   #(
-    .p_nbits(32),
-    .p_shamt_nbits(5) 
+    .p_nbits      (32),
+    .p_shamt_nbits(1)
   ) right_shift (
-    .in(b_reg_out),
-    .shamt(1),
-    .out(b_shifted_out)
+    .in   (b_reg_out),
+    .shamt(1'b1),
+    .out  (b_shifted_out)
   );
 
   vc_Mux2 //2-1 multiplexer
@@ -79,12 +79,12 @@ module lab1_imul_DatapathUnitBase
 
   vc_LeftLogicalShifter
   #(
-    .p_nbits(32),
-    .p_shamt_nbits(5)
+    .p_nbits      (32),
+    .p_shamt_nbits(1)
   ) left_shift (
-    .in(a_reg_out),
-    .shamt(1),
-    .out(a_shifted_out)
+    .in   (a_reg_out),
+    .shamt(1'b1),
+    .out  (a_shifted_out)
   );
 
   vc_Mux2 //2-1 multiplexer
@@ -236,7 +236,7 @@ module lab1_imul_ControlUnitBase
         b_mux_sel       = 0;
         result_mux_sel  = 0;
         a_mux_sel       = 0;
-        result_en       = 1; // should this be 0 or 1?
+        result_en       = 1;
         add_mux_sel     = 0;
         istream_rdy     = 1;
         ostream_val     = 0;
@@ -257,7 +257,7 @@ module lab1_imul_ControlUnitBase
         b_mux_sel       = 0;
         result_mux_sel  = 0;
         a_mux_sel       = 0;
-        result_en       = 0; // when result_en is zero, it should not matter what any other signal is?
+        result_en       = 0;
         add_mux_sel     = 0;
         istream_rdy     = 0;
         ostream_val     = 1;
@@ -267,7 +267,7 @@ module lab1_imul_ControlUnitBase
         b_mux_sel       = 0;
         result_mux_sel  = 0;
         a_mux_sel       = 0;
-        result_en       = 1; // should this be 0 or 1?
+        result_en       = 1;
         add_mux_sel     = 0;
         istream_rdy     = 0;
         ostream_val     = 0;
