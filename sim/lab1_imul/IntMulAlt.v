@@ -7,48 +7,9 @@
 
 `include "vc/trace.v"
 
-//including libraries for mux
 `include "vc/muxes.v"
 `include "vc/regs.v"
 `include "vc/arithmetic.v"
-
-//custom LUT
-// module shift_by (
-//     input  [3:0] in,   // 4-bit input
-//     output [2:0] out   // 3-bit output (for LUT result)
-// );
-
-// reg [2:0] out_reg;
-
-// always @(*) begin
-//     case (in)
-//         4'b0000: out_reg = 3'b100;  // Special case for 0000, output is 4
-//         4'b0001: out_reg = 3'b000;  // 0 leading zeros
-//         4'b0010: out_reg = 3'b001;  // 1 leading zero
-//         4'b0011: out_reg = 3'b000;  // 0 leading zeros
-//         4'b0100: out_reg = 3'b010;  // 2 leading zeros
-//         4'b0101: out_reg = 3'b000;  // 0 leading zeros
-//         4'b0110: out_reg = 3'b001;  // 1 leading zero
-//         4'b0111: out_reg = 3'b000;  // 0 leading zeros
-//         4'b1000: out_reg = 3'b011;  // 3 leading zeros
-//         4'b1001: out_reg = 3'b000;  // 0 leading zeros
-//         4'b1010: out_reg = 3'b001;  // 1 leading zero
-//         4'b1011: out_reg = 3'b000;  // 0 leading zeros
-//         4'b1100: out_reg = 3'b010;  // 2 leading zeros
-//         4'b1101: out_reg = 3'b000;  // 0 leading zeros
-//         4'b1110: out_reg = 3'b001;  // 1 leading zero
-//         4'b1111: out_reg = 3'b000;  // 0 leading zeros
-//         default: out_reg = 3'b001;  // Default case (shouldn't happen)
-//     endcase
-// end
-
-// assign out = out_reg;
-
-// endmodule
-
-// ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-// Define datapath and control unit here.
-// '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 module lab1_imul_DatapathUnitAlt
 (
@@ -90,26 +51,26 @@ module lab1_imul_DatapathUnitAlt
     .out(b_shifted_out)
   );
 
-  vc_Mux2 //2-1 multiplexer
+  vc_Mux2
   #(
-    .p_nbits(32) //input and output are 32 b long
+    .p_nbits(32)
   ) b_mux (
-    .in0(istream_msg[31:0]), //first 32 b of the 64 b input message is b
-    .in1(b_shifted_out), //output of b circuit after being shifted by 'shift_amount' to the right
-    .sel(b_mux_sel), //selection line for b mux
-    .out(b_mux_out) //output of b mux = input to b_reg
+    .in0(istream_msg[31:0]),
+    .in1(b_shifted_out),
+    .sel(b_mux_sel),
+    .out(b_mux_out)
   );
 
-  vc_Reg //for storing data in synchronous digital circuits
+  vc_Reg
   #(
-    .p_nbits(32) //input and output are 32 b long
+    .p_nbits(32)
   ) b_reg (
     .clk(clk),
-    .d  (b_mux_out), //captures b_mux_out on the rising edge of clk and
-    .q  (b_reg_out) //provides the stored value on b_reg_out
+    .d  (b_mux_out),
+    .q  (b_reg_out)
   );
 
-  // For 32-bit input b
+  // For 32-bit input a
   logic [31:0] a_mux_out;
   logic [31:0] a_reg_out;
   logic [31:0] a_shifted_out;
@@ -124,14 +85,14 @@ module lab1_imul_DatapathUnitAlt
     .out(a_shifted_out)
   );
 
-  vc_Mux2 //2-1 multiplexer
+  vc_Mux2
   #(
-    .p_nbits(32) //input and output are 32 b long
+    .p_nbits(32)
   ) a_mux (
-    .in0(istream_msg[63:32]), //last 32 b of the 64 b input message is s
-    .in1(a_shifted_out),//output of a circuit after being shifted by shift_amount to the left
-    .sel(a_mux_sel), //selection line for a mux
-    .out(a_mux_out) //output of a mux = input to a_reg
+    .in0(istream_msg[63:32]),
+    .in1(a_shifted_out),
+    .sel(a_mux_sel),
+    .out(a_mux_out)
   );
 
   vc_Reg
@@ -139,17 +100,15 @@ module lab1_imul_DatapathUnitAlt
     .p_nbits(32)
   ) a_reg (
     .clk(clk),
-    .d  (a_mux_out), //captures b_mux_out on the rising edge of clk and
-    .q  (a_reg_out) //provides the stored value on b_reg_out
+    .d  (a_mux_out),
+    .q  (a_reg_out)
   );
 
   // Circuit for result
-  logic [31:0] result_mux_out; //selection as determined by result_ mux_sel
+  logic [31:0] result_mux_out;
   logic [31:0] result_reg_out;
-  logic [31:0] result_adder_out; //output of adder
-  logic [31:0] result_adder_mux_out; //mux output
-
-  // logic [2:0] shift_amount; //for LUT
+  logic [31:0] result_adder_out;
+  logic [31:0] result_adder_mux_out;
 
   assign ostream_msg = result_reg_out;
 
@@ -195,17 +154,8 @@ module lab1_imul_DatapathUnitAlt
     .out(result_adder_mux_out)
   );
 
-  // always_comb
-  // begin
-  //   if (b_reg_out == 0)
-  //     shift_amount = 0;
-  //   else
-  //     shift_amount = $clog2( b_reg_out & (~b_reg_out + 1));
-  //     if(shift_amount==0) //if there is no 0, just shift by 1
-  //       shift_amount = 1;
-  // end
-
-
+  // Additional datapath logic for alt design
+  // Skips 8, or 4, or 2, or 1 consecutive zeros
   always_comb
   begin
     if (b_reg_out[7:0] == 8'b0)
@@ -217,11 +167,6 @@ module lab1_imul_DatapathUnitAlt
     else
       shift_amount = 1;
   end
-
-// shift_by sb (
-//   .in(b_reg_out[3:0]),
-//   .out(shift_amount)
-// );
 
 endmodule
 
@@ -256,12 +201,13 @@ module lab1_imul_ControlUnitAlt
   logic [5:0] counter;
 
   // Change state on clock edge
-  always_ff @(posedge clk) //sequential logic
+  always_ff @(posedge clk)
   begin
     if (reset)  curr_state <= IDLE;
     else        curr_state <= next_state;
   end
 
+  // Counter for Alt design increments by shift_amount each cycle instead of 1
   always_ff @(posedge clk)
   begin
     if (reset)                    counter <= 0;
@@ -363,11 +309,6 @@ module lab1_imul_IntMulAlt
   output logic [31:0] ostream_msg
 );
 
-  // ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  // Instantiate datapath and control models here and then connect them
-  // together.
-  // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
   //control signals passed from control unit to data unit
   logic       b_lsb;
   logic       b_mux_sel;
@@ -429,12 +370,6 @@ module lab1_imul_IntMulAlt
     vc_trace.append_val_rdy_str( trace_str, istream_val, istream_rdy, str );
 
     vc_trace.append_str( trace_str, "(" );
-
-    // ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    // Add additional line tracing using the helper tasks for
-    // internal state including the current FSM state.
-    // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
     vc_trace.append_str( trace_str, ")" );
 
     $sformat( str, "%x", ostream_msg );

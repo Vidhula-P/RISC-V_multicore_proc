@@ -77,11 +77,6 @@ small_pos_pos_msgs = [
   mk_imsg(  8,  7 ), mk_omsg(  56 ),
 ]
 
-# ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Define additional lists of input/output messages to create
-# additional directed and random test cases.
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
 #----------------------------------------------------------------------
 # Test Case: basic 0, 1, -1
 #----------------------------------------------------------------------
@@ -208,6 +203,7 @@ large_neg_pos_msgs = [
   mk_imsg(  -32768,  32767 ), mk_omsg(  -1073709056 ),
   mk_imsg(  -2147483648,  2147483647 ), mk_omsg(  -4611686016279904256 ),
 ]
+
 #----------------------------------------------------------------------
 # Test Case: large negative * negative
 #----------------------------------------------------------------------
@@ -311,11 +307,6 @@ test_case_table = mk_test_case_table([
   [ "small_pos_pos_1",     small_pos_pos_msgs,     0,        0          ],
   [ "small_pos_pos_2",     small_pos_pos_msgs,     0,        1          ],
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # Add more rows to the test case table to leverage the additional lists
-  # of request/response messages defined above, but also to test
-  # different source/sink random delays.
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   [ "basic_1",             basic_msgs,             0,        0          ],
   [ "basic_2",             basic_msgs,             1,        0          ],
 

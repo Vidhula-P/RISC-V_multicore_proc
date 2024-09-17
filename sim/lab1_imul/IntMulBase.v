@@ -10,10 +10,6 @@
 `include "vc/regs.v"
 `include "vc/arithmetic.v"
 
-// ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-// Define datapath and control unit here.
-// '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
 module lab1_imul_DatapathUnitBase
 (
   input  logic        clk,
@@ -53,14 +49,14 @@ module lab1_imul_DatapathUnitBase
     .out  (b_shifted_out)
   );
 
-  vc_Mux2 //2-1 multiplexer
+  vc_Mux2
   #(
-    .p_nbits(32) //input and output are 32 b long
+    .p_nbits(32)
   ) b_mux (
-    .in0(istream_msg[31:0]), //first 32 b of the 64 b input message is b
-    .in1(b_shifted_out), //output of b circuit after being shifted by 'shift_amount' to the right
-    .sel(b_mux_sel), //selection line for b mux
-    .out(b_mux_out) //output of b mux = input to b_reg
+    .in0(istream_msg[31:0]),
+    .in1(b_shifted_out),
+    .sel(b_mux_sel),
+    .out(b_mux_out)
   );
 
   vc_Reg
@@ -87,14 +83,14 @@ module lab1_imul_DatapathUnitBase
     .out  (a_shifted_out)
   );
 
-  vc_Mux2 //2-1 multiplexer
+  vc_Mux2
   #(
-    .p_nbits(32) //input and output are 32 b long
+    .p_nbits(32)
   ) a_mux (
-    .in0(istream_msg[63:32]), //last 32 b of the 64 b input message is s
-    .in1(a_shifted_out),//output of a circuit after being shifted by shift_amount to the left
-    .sel(a_mux_sel), //selection line for a mux
-    .out(a_mux_out) //output of a mux = input to a_reg
+    .in0(istream_msg[63:32]),
+    .in1(a_shifted_out),
+    .sel(a_mux_sel),
+    .out(a_mux_out)
   );
 
   vc_Reg
@@ -295,11 +291,6 @@ module lab1_imul_IntMulBase
   output logic [31:0] ostream_msg
 );
 
-  // ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  // Instantiate datapath and control models here and then connect them
-  // together.
-  // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
   logic b_lsb;
   logic b_mux_sel;
   logic a_mux_sel;
@@ -357,12 +348,6 @@ module lab1_imul_IntMulBase
     vc_trace.append_val_rdy_str( trace_str, istream_val, istream_rdy, str );
 
     vc_trace.append_str( trace_str, "(" );
-
-    // ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    // Add additional line tracing using the helper tasks for
-    // internal state including the current FSM state.
-    // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
     vc_trace.append_str( trace_str, ")" );
 
     $sformat( str, "%x", ostream_msg );

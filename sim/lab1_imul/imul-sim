@@ -83,11 +83,9 @@ for i in range(50):
   b = randint(0,100)
   random_small_msgs.extend([ mk_imsg( a, b ), mk_omsg( a * b ) ])
 
-# ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# You should add more datasets for evaluation. Remember these datasets
-# are not for testing; your design should already be thoroughly tested
-# before you begin your evaluation.
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#----------------------------------------------------------------------
+# Data Set: basic
+#----------------------------------------------------------------------
 
 # Use basic tests to demonstrate how the Alt design works compared to the Base design
 # Basic tests have a very large number of consecutive zeros and the latency reduction is very apparent
@@ -105,6 +103,10 @@ basic_msgs = [
   mk_imsg(  1, -1 ), mk_omsg( -1 ),
   mk_imsg( -1,  1 ), mk_omsg( -1 ),
 ]
+
+#----------------------------------------------------------------------
+# Data Set: random
+#----------------------------------------------------------------------
 
 # Use random tests for statistical comparison (average number of cycles per multiplication)
 random_msgs = [
@@ -130,6 +132,10 @@ for i in range(50):
   masked_rand_b = perform_mmask(rand_b, start_bit, end_bit)
   random_msgs.extend([mk_imsg_mmask(rand_a, rand_b, start_bit, end_bit), mk_omsg(masked_rand_a * masked_rand_b)])
 
+#----------------------------------------------------------------------
+# Data Set: sparse
+#----------------------------------------------------------------------
+
 # Sparse tests should show large latency reduction
 sparse_msgs = [
   # Up to 16 bit twos complement
@@ -137,6 +143,10 @@ sparse_msgs = [
   # More than 16 bit twos complement
   mk_imsg(  11184640, 279620104),  mk_omsg( 3127450200002560 ),
 ]
+
+#----------------------------------------------------------------------
+# Data Set: dense
+#----------------------------------------------------------------------
 
 # Dense tests should show minimal latency reduction
 dense_msgs = [
@@ -171,11 +181,6 @@ def parse_cmdline():
   p.add_argument( "--impl", default="fl",
     choices=["fl","base","alt"] )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # Add more choices below for the --input command line option. There
-  # should be one choice for each input dataset that you defined above.
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
   p.add_argument( "--input", default="small",
     choices=["small", "basic", "random", "sparse", "dense"] )
 
@@ -198,11 +203,6 @@ def main():
   # Create the input pattern
 
   inputs  = None
-
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # Use additional if statements to set the inputs appropriately based on
-  # the --input command line option.
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
   if opts.input == "small":
     inputs = random_small_msgs
