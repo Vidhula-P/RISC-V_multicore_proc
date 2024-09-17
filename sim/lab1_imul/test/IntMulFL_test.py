@@ -142,17 +142,23 @@ small_neg_neg_msgs = [
 #----------------------------------------------------------------------
 
 large_pos_pos_msgs = [
-  # Tests that do not cause output to overflow (input up to 16 bits)
+  # Tests that do not cause output to overflow (input up to 16 bits twos complement)
+  mk_imsg(  25002,  29867 ), mk_omsg(  746734734 ),
+  mk_imsg(  28788,  29393 ), mk_omsg(  846165684 ),
+  mk_imsg(  25701,  24359 ), mk_omsg(  626050659 ),
+  mk_imsg(  13134,  22203 ), mk_omsg(  291614202 ),
+  mk_imsg(  18991,  14158 ), mk_omsg(  268874578 ),
 
+  # Tests that cause output to overflow (input more than 16 bits twos complement)
+  mk_imsg(  2000000000,   746065439 ), mk_omsg(  1492130878000000000 ),
+  mk_imsg(   524811885,  1000000000 ), mk_omsg(   524811885000000000 ),
+  mk_imsg(  1178821202,   354137688 ), mk_omsg(   417465015041660976 ),
+  mk_imsg(  1523684544,   259862687 ), mk_omsg(   395948759744209728 ),
+  mk_imsg(   578894330,  1756184545 ), mk_omsg(  1016645275534129850 ),
 
-  # Tests that cause output to overflow (input more than 16 bits)
-  mk_imsg(  2000000000,  3141592653 ), mk_omsg(  6283185306000000000 ),
-  mk_imsg(  4294967295,  1000000000 ), mk_omsg(  4294967295000000000 ),
-  mk_imsg(  5000000000,  6000000000 ), mk_omsg(  30000000000000000000 ),
-  mk_imsg(  7000000000,  8000000000 ), mk_omsg(  56000000000000000000 ),
-  mk_imsg(  9000000000,  1234567890 ), mk_omsg(  11111111010000000000 ),
-
-  # Maximum 16 bit and 32 bit positive values
+  # Maximum 16 bit and 32 bit twos complement positive values
+  mk_imsg(  32767,  32767 ), mk_omsg(  1073676289 ),
+  mk_imsg(  2147483647,  2147483647 ), mk_omsg(  4611686014132420609 ),
 ]
 
 #----------------------------------------------------------------------
@@ -160,11 +166,23 @@ large_pos_pos_msgs = [
 #----------------------------------------------------------------------
 
 large_pos_neg_msgs = [
-  mk_imsg(  2000000000,  -3141592653 ), mk_omsg(  -6283185306000000000 ),
-  mk_imsg(  4294967295,  -1000000000 ), mk_omsg(  -4294967295000000000 ),
-  mk_imsg(  5000000000,  -6000000000 ), mk_omsg(  -30000000000000000000 ),
-  mk_imsg(  7000000000,  -8000000000 ), mk_omsg(  -56000000000000000000 ),
-  mk_imsg(  9000000000,  -1234567890 ), mk_omsg(  -11111111010000000000 ),
+  # Tests that do not cause output to overflow (input up to 16 bits twos complement)
+  mk_imsg(  25002,  -29867 ), mk_omsg(  -746734734 ),
+  mk_imsg(  28788,  -29393 ), mk_omsg(  -846165684 ),
+  mk_imsg(  25701,  -24359 ), mk_omsg(  -626050659 ),
+  mk_imsg(  13134,  -22203 ), mk_omsg(  -291614202 ),
+  mk_imsg(  18991,  -14158 ), mk_omsg(  -268874578 ),
+
+  # Tests that cause output to overflow (input more than 16 bits twos complement)
+  mk_imsg(  2000000000,   -746065439 ), mk_omsg(  -1492130878000000000 ),
+  mk_imsg(   524811885,  -1000000000 ), mk_omsg(   -524811885000000000 ),
+  mk_imsg(  1178821202,   -354137688 ), mk_omsg(   -417465015041660976 ),
+  mk_imsg(  1523684544,   -259862687 ), mk_omsg(   -395948759744209728 ),
+  mk_imsg(   578894330,  -1756184545 ), mk_omsg(  -1016645275534129850 ),
+
+  # Maximum 16 bit and 32 bit twos complement positive/negative values
+  mk_imsg(  32767,  -32768 ), mk_omsg(  -1073709056 ),
+  mk_imsg(  2147483647,  -2147483648 ), mk_omsg(  -4611686016279904256 ),
 ]
 
 #----------------------------------------------------------------------
@@ -172,23 +190,47 @@ large_pos_neg_msgs = [
 #----------------------------------------------------------------------
 
 large_neg_pos_msgs = [
-  mk_imsg(  -2000000000,  3141592653 ), mk_omsg(  -6283185306000000000 ),
-  mk_imsg(  -4294967295,  1000000000 ), mk_omsg(  -4294967295000000000 ),
-  mk_imsg(  -5000000000,  6000000000 ), mk_omsg(  -30000000000000000000 ),
-  mk_imsg(  -7000000000,  8000000000 ), mk_omsg(  -56000000000000000000 ),
-  mk_imsg(  -9000000000,  1234567890 ), mk_omsg(  -11111111010000000000 ),
-]
+  # Tests that do not cause output to overflow (input up to 16 bits twos complement)
+  mk_imsg(  -25002,  29867 ), mk_omsg(  -746734734 ),
+  mk_imsg(  -28788,  29393 ), mk_omsg(  -846165684 ),
+  mk_imsg(  -25701,  24359 ), mk_omsg(  -626050659 ),
+  mk_imsg(  -13134,  22203 ), mk_omsg(  -291614202 ),
+  mk_imsg(  -18991,  14158 ), mk_omsg(  -268874578 ),
 
+  # Tests that cause output to overflow (input more than 16 bits twos complement)
+  mk_imsg(  -2000000000,   746065439 ), mk_omsg(  -1492130878000000000 ),
+  mk_imsg(   -524811885,  1000000000 ), mk_omsg(   -524811885000000000 ),
+  mk_imsg(  -1178821202,   354137688 ), mk_omsg(   -417465015041660976 ),
+  mk_imsg(  -1523684544,   259862687 ), mk_omsg(   -395948759744209728 ),
+  mk_imsg(   -578894330,  1756184545 ), mk_omsg(  -1016645275534129850 ),
+
+  # Maximum 16 bit and 32 bit twos complement positive/negative values
+  mk_imsg(  -32768,  32767 ), mk_omsg(  -1073709056 ),
+  mk_imsg(  -2147483648,  2147483647 ), mk_omsg(  -4611686016279904256 ),
+]
 #----------------------------------------------------------------------
 # Test Case: large negative * negative
 #----------------------------------------------------------------------
 
 large_neg_neg_msgs = [
-  mk_imsg(  -2000000000,  -3141592653 ), mk_omsg(  6283185306000000000 ),
-  mk_imsg(  -4294967295,  -1000000000 ), mk_omsg(  4294967295000000000 ),
-  mk_imsg(  -5000000000,  -6000000000 ), mk_omsg(  30000000000000000000 ),
-  mk_imsg(  -7000000000,  -8000000000 ), mk_omsg(  56000000000000000000 ),
-  mk_imsg(  -9000000000,  -1234567890 ), mk_omsg(  11111111010000000000 ),
+  # Tests that do not cause output to overflow (input up to 16 bits twos complement)
+  mk_imsg(  -25002,  -29867 ), mk_omsg(  746734734 ),
+  mk_imsg(  -28788,  -29393 ), mk_omsg(  846165684 ),
+  mk_imsg(  -25701,  -24359 ), mk_omsg(  626050659 ),
+  mk_imsg(  -13134,  -22203 ), mk_omsg(  291614202 ),
+  mk_imsg(  -18991,  -14158 ), mk_omsg(  268874578 ),
+
+  # Tests that cause output to overflow (input more than 16 bits twos complement)
+  mk_imsg(  -2000000000,   -746065439 ), mk_omsg(  1492130878000000000 ),
+  mk_imsg(   -524811885,  -1000000000 ), mk_omsg(   524811885000000000 ),
+  mk_imsg(  -1178821202,   -354137688 ), mk_omsg(   417465015041660976 ),
+  mk_imsg(  -1523684544,   -259862687 ), mk_omsg(   395948759744209728 ),
+  mk_imsg(   -578894330,  -1756184545 ), mk_omsg(  1016645275534129850 ),
+
+  # Maximum 16 bit and 32 bit twos complement positive/negative values
+  mk_imsg(  -32768,  -32768 ), mk_omsg(  1073741824 ),
+  mk_imsg(  -2147483648,  -2147483648 ), mk_omsg(  4611686018427387904 ),
+
 ]
 
 #----------------------------------------------------------------------
@@ -196,8 +238,10 @@ large_neg_neg_msgs = [
 #----------------------------------------------------------------------
 
 low_mask_msgs = [
+  # Up to 16 bit twos complement
   mk_imsg_lmask(  239,        453,         2 ), mk_omsg(              106672 ),
   mk_imsg_lmask(  8920,       15502,       8 ), mk_omsg(          133693440  ),
+  # More than 16 bit twos complement
   mk_imsg_lmask(  47847382,   739006219,   15), mk_omsg(  35353937397678080  ),
 ]
 
@@ -206,8 +250,10 @@ low_mask_msgs = [
 #----------------------------------------------------------------------
 
 mid_mask_msgs = [
+  # Up to 16 bit twos complement
   mk_imsg_mmask(  239,        453,         2,    4 ),  mk_omsg(            101923 ),
   mk_imsg_mmask(  8920,       15502,       4,    11 ), mk_omsg(         100876400 ),
+  # More than 16 bit twos complement
   mk_imsg_mmask(  47847382,   739006219,   7,    19),  mk_omsg( 34832592371975090 ),
 ]
 
@@ -216,8 +262,10 @@ mid_mask_msgs = [
 #----------------------------------------------------------------------
 
 sparse_msgs = [
-  mk_imsg(  4294967296,         65536),  mk_omsg( 281474976710656 ),
-  mk_imsg(  11184640,       279620104),  mk_omsg( 3127450200002560 ),
+  # Up to 16 bit twos complement
+  mk_imsg(  32769,  32897),  mk_omsg( 1078001793 ),
+  # More than 16 bit twos complement
+  mk_imsg(  11184640, 279620104),  mk_omsg( 3127450200002560 ),
 ]
 
 #----------------------------------------------------------------------
@@ -225,17 +273,17 @@ sparse_msgs = [
 #----------------------------------------------------------------------
 
 dense_msgs = [
-  mk_imsg(  4294967295,    4294901759 ),  mk_omsg(  18446462590142971905 ),
-  mk_imsg(  1605348090,    2142153466),   mk_omsg(  3438901975129979940  ),
+  # Up to 16 bit twos complement
+  mk_imsg(  31743,  16351 ),  mk_omsg(  519029793 ),
+  # More than 16 bit twos complement
+  mk_imsg(  1605348090,  2142153466), mk_omsg(  3438901975129979940 ),
 ]
 
 random_msgs = [
 ]
 
-for _ in range(30):
+for i in range(30):
   rand_a = randint(-2147483648, 2147483647)
-  print("a")
-  print(rand_a)
   rand_b = randint(-2147483648, 2147483647)
 
   # Unmasked
@@ -260,52 +308,52 @@ for _ in range(30):
 
 test_case_table = mk_test_case_table([
   (                      "msgs                   src_delay sink_delay"),
-  [ "small_pos_pos",     small_pos_pos_msgs,     0,        0          ],
-  [ "small_pos_pos",     small_pos_pos_msgs,     0,        1          ],
+  [ "small_pos_pos_1",     small_pos_pos_msgs,     0,        0          ],
+  [ "small_pos_pos_2",     small_pos_pos_msgs,     0,        1          ],
 
   # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   # Add more rows to the test case table to leverage the additional lists
   # of request/response messages defined above, but also to test
   # different source/sink random delays.
   # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  [ "basic",             basic_msgs,             0,        0          ],
-  [ "basic",             basic_msgs,             1,        0          ],
+  [ "basic_1",             basic_msgs,             0,        0          ],
+  [ "basic_2",             basic_msgs,             1,        0          ],
 
-  [ "small_pos_neg",     small_pos_neg_msgs,     0,        0          ],
-  [ "small_pos_neg",     small_pos_neg_msgs,     0,        2          ],
+  [ "small_pos_neg_1",     small_pos_neg_msgs,     0,        0          ],
+  [ "small_pos_neg_2",     small_pos_neg_msgs,     0,        2          ],
 
-  [ "small_neg_pos",     small_neg_pos_msgs,     0,        0          ],
-  [ "small_neg_pos",     small_neg_pos_msgs,     2,        0          ],
+  [ "small_neg_pos_1",     small_neg_pos_msgs,     0,        0          ],
+  [ "small_neg_pos_2",     small_neg_pos_msgs,     2,        0          ],
 
-  [ "small_neg_neg",     small_neg_neg_msgs,     0,        0          ],
-  [ "small_neg_neg",     small_neg_neg_msgs,     2,        1          ],
+  [ "small_neg_neg_1",     small_neg_neg_msgs,     0,        0          ],
+  [ "small_neg_neg_2",     small_neg_neg_msgs,     2,        1          ],
 
-  [ "large_pos_pos",     large_pos_pos_msgs,     0,        0          ],
-  [ "large_pos_pos",     large_pos_pos_msgs,     1,        2          ],
+  [ "large_pos_pos_1",     large_pos_pos_msgs,     0,        0          ],
+  [ "large_pos_pos_2",     large_pos_pos_msgs,     1,        2          ],
 
-  [ "large_pos_neg",     large_pos_neg_msgs,     0,        0          ],
-  [ "large_pos_neg",     large_pos_neg_msgs,     0,        3          ],
+  [ "large_pos_neg_1",     large_pos_neg_msgs,     0,        0          ],
+  [ "large_pos_neg_2",     large_pos_neg_msgs,     0,        3          ],
 
-  [ "large_neg_pos",     large_neg_pos_msgs,     0,        0          ],
-  [ "large_neg_pos",     large_neg_pos_msgs,     3,        0          ],
+  [ "large_neg_pos_1",     large_neg_pos_msgs,     0,        0          ],
+  [ "large_neg_pos_2",     large_neg_pos_msgs,     3,        0          ],
 
-  [ "large_neg_neg",     large_neg_neg_msgs,     0,        0          ],
-  [ "large_neg_neg",     large_neg_neg_msgs,     3,        5          ],
+  [ "large_neg_neg_1",     large_neg_neg_msgs,     0,        0          ],
+  [ "large_neg_neg_2",     large_neg_neg_msgs,     3,        5          ],
 
-  [ "lower_bits_mask",   low_mask_msgs,          0,        0          ],
-  [ "lower_bits_mask",   low_mask_msgs,          0,       10          ],
+  [ "lower_bits_mask_1",   low_mask_msgs,          0,        0          ],
+  [ "lower_bits_mask_2",   low_mask_msgs,          0,       10          ],
 
-  [ "middle_bits_mask",  mid_mask_msgs,          0,        0          ],
-  [ "middle_bits_mask",  mid_mask_msgs,         10,        0          ],
+  [ "middle_bits_mask_1",  mid_mask_msgs,          0,        0          ],
+  [ "middle_bits_mask_2",  mid_mask_msgs,         10,        0          ],
 
-  [ "sparse_bits",       sparse_msgs,            0,        0          ],
-  [ "sparse_bits",       sparse_msgs,            2,        7          ],
+  [ "sparse_bits_1",       sparse_msgs,            0,        0          ],
+  [ "sparse_bits_2",       sparse_msgs,            2,        7          ],
 
-  [ "dense_bits",        dense_msgs,             0,        0          ],
-  [ "dense_bits",        dense_msgs,             9,        1          ],
+  [ "dense_bits_1",        dense_msgs,             0,        0          ],
+  [ "dense_bits_2",        dense_msgs,             9,        1          ],
 
-  [ "random_tests",      random_msgs,            0,        0          ],
-  [ "random_tests",      random_msgs,            2,        6          ],
+  [ "random_tests_1",      random_msgs,            0,        0          ],
+  [ "random_tests_2",      random_msgs,            2,        6          ],
 ])
 
 #-------------------------------------------------------------------------

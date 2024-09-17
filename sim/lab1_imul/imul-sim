@@ -58,6 +58,20 @@ def mk_imsg( a, b ):
 def mk_omsg( a ):
   return Bits32( a, trunc_int=True )
 
+def perform_lmask(a, num_bits_to_mask):
+  mask = ((1<<32) -1) << num_bits_to_mask
+  return Bits32( ( a & mask ), trunc_int=True)
+
+def mk_imsg_lmask(a, b, num_bits_to_mask): # modified mk_imsg to accomodate masking of lower bits
+  return concat( perform_lmask(a, num_bits_to_mask), perform_lmask(b, num_bits_to_mask) )
+
+def perform_mmask(a, start_bit, end_bit):
+  mask = ~ (((1 << (end_bit - start_bit + 1)) - 1) << start_bit)
+  return Bits32( ( a & mask ), trunc_int=True)
+
+def mk_imsg_mmask(a, b, start_bit, end_bit): # modified mk_imsg to accomodate masking of middle bits
+  return concat( perform_mmask(a, start_bit, end_bit), perform_mmask(b, start_bit, end_bit) )
+
 
 #----------------------------------------------------------------------
 # Data Set: random small
@@ -75,57 +89,62 @@ for i in range(50):
 # before you begin your evaluation.
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-#----------------------------------------------------------------------
-# Data Set: random large
-#----------------------------------------------------------------------
+# Use basic tests to demonstrate how the Alt design works compared to the Base design
+# Basic tests have a very large number of consecutive zeros and the latency reduction is very apparent
+basic_msgs = [
+  mk_imsg(  0,  0 ), mk_omsg(  0 ),
+  mk_imsg(  1,  1 ), mk_omsg(  1 ),
+  mk_imsg( -1, -1 ), mk_omsg(  1 ),
 
-random_large_msgs = []
+  mk_imsg(  0,  1 ), mk_omsg(  0 ),
+  mk_imsg(  1,  0 ), mk_omsg(  0 ),
+
+  mk_imsg(  0, -1 ), mk_omsg(  0 ),
+  mk_imsg( -1,  0 ), mk_omsg(  0 ),
+
+  mk_imsg(  1, -1 ), mk_omsg( -1 ),
+  mk_imsg( -1,  1 ), mk_omsg( -1 ),
+]
+
+# Use random tests for statistical comparison (average number of cycles per multiplication)
+random_msgs = [
+]
+
 for i in range(50):
-  a = randint(4294967200,4294967295)
-  b = randint(4294967200,4294967295);
-  random_large_msgs.extend([ mk_imsg( a, b ), mk_omsg( a * b ) ])
+  rand_a = randint(-2147483648, 2147483647)
+  rand_b = randint(-2147483648, 2147483647)
 
-#----------------------------------------------------------------------
-# Data Set: random lower bits masked
-#----------------------------------------------------------------------
+  # Unmasked
+  random_msgs.extend([mk_imsg(rand_a, rand_b),  mk_omsg(rand_a * rand_b)])
 
-random_lower_masked_msgs = []
-for i in range(50):
-  a = randint(0,4294967295)
-  b = randint(0,4294967295)
-  num_bits_to_mask = randint(0,32)
-  a = a & ( ( (1<<32)-1 )<<num_bits_to_mask)
-  b = b & ( ( (1<<32)-1 )<<num_bits_to_mask)
-  
-  random_lower_masked_msgs.extend([ mk_imsg( a, b ), mk_omsg( a * b ) ])
+  # Low Mask
+  num_bits_to_mask = randint(0, 32)
+  masked_rand_a = perform_lmask(rand_a, num_bits_to_mask)
+  masked_rand_b = perform_lmask(rand_b, num_bits_to_mask)
+  random_msgs.extend([mk_imsg_lmask(rand_a, rand_b, num_bits_to_mask), mk_omsg(masked_rand_a * masked_rand_b)])
 
-#----------------------------------------------------------------------
-# Data Set: random lower bits masked
-#----------------------------------------------------------------------
+  # Middle Mask
+  start_bit = randint(0, 31)
+  end_bit = randint(start_bit, 31)
+  masked_rand_a = perform_mmask(rand_a, start_bit, end_bit)
+  masked_rand_b = perform_mmask(rand_b, start_bit, end_bit)
+  random_msgs.extend([mk_imsg_mmask(rand_a, rand_b, start_bit, end_bit), mk_omsg(masked_rand_a * masked_rand_b)])
 
-random_lower_masked_msgs = []
-for i in range(50):
-  a = randint(0,4294967295)
-  b = randint(0,4294967295)
-  num_bits_to_mask = randint(0,32)
-  a = a & ( ( (1<<32)-1 )<<num_bits_to_mask)
-  b = b & ( ( (1<<32)-1 )<<num_bits_to_mask)
-  
-  random_lower_masked_msgs.extend([ mk_imsg( a, b ), mk_omsg( a * b ) ])
+# Sparse tests should show large latency reduction
+sparse_msgs = [
+  # Up to 16 bit twos complement
+  mk_imsg(  32769,  32897),  mk_omsg( 1078001793 ),
+  # More than 16 bit twos complement
+  mk_imsg(  11184640, 279620104),  mk_omsg( 3127450200002560 ),
+]
 
-# #----------------------------------------------------------------------
-# # Data Set: random higher bits masked
-# #----------------------------------------------------------------------
-
-# random_higher_masked_msgs = []
-# for i in range(50):
-#   a = randint(0,4294967295)
-#   b = randint(0,4294967295)
-#   num_bits_to_mask = randint(0,32)
-#   a = a & ( ( (1<<32)-1 )>>num_bits_to_mask) #need to find min bit length (replace 32) before shifting
-#   b = b & ( ( (1<<32)-1 )>>num_bits_to_mask)  
-#   random_higher_masked_msgs.extend([ mk_imsg( a, b ), mk_omsg( a * b ) ])
-
+# Dense tests should show minimal latency reduction
+dense_msgs = [
+  # Up to 16 bit twos complement
+  mk_imsg(  31743,  16351 ),  mk_omsg(  519029793 ),
+  # More than 16 bit twos complement
+  mk_imsg(  1605348090,  2142153466), mk_omsg(  3438901975129979940 ),
+]
 
 #-------------------------------------------------------------------------
 # Command line processing
@@ -158,7 +177,7 @@ def parse_cmdline():
   # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
   p.add_argument( "--input", default="small",
-    choices=["small", "large", "lomask", "himask", "lohimask"] )
+    choices=["small", "basic", "random", "sparse", "dense"] )
 
   p.add_argument( "--trace",     action="store_true" )
   p.add_argument( "--stats",     action="store_true" )
@@ -187,14 +206,14 @@ def main():
 
   if opts.input == "small":
     inputs = random_small_msgs
-  elif opts.input == "large":
-    inputs = random_large_msgs
-  elif opts.input == "lomask":
-    inputs = random_lower_masked_msgs
-  elif opts.input == "himask":
-    inputs = random_higher_masked_msgs
-  elif opts.input == "lohimask":
-    inputs = random_middle_masked_msgs
+  elif opts.input == "basic":
+    inputs = basic_msgs
+  elif opts.input == "random":
+    inputs = random_msgs
+  elif opts.input == "sparse":
+    inputs = sparse_msgs
+  elif opts.input == "dense":
+    inputs = dense_msgs
 
   ninputs = len(inputs[::2])
 
