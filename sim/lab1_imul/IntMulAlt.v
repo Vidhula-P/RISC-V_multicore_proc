@@ -65,10 +65,13 @@ module lab1_imul_DatapathUnitAlt
   input  logic [63:0] istream_msg,
   output logic [31:0] ostream_msg,
 
-  output logic        b_lsb
+  output logic        b_lsb,
+  output logic [3:0]  shift_amount
 );
 
+  /* verilator lint_off unused */
   logic result_adder_cout_null;
+  /* verilator lint_on unused */
 
   // For 32-bit input b
   logic [31:0] b_mux_out;
@@ -80,7 +83,7 @@ module lab1_imul_DatapathUnitAlt
   vc_RightLogicalShifter
   #(
     .p_nbits(32),
-    .p_shamt_nbits(5) 
+    .p_shamt_nbits(4)
   ) right_shift (
     .in(b_reg_out),
     .shamt(shift_amount),
@@ -114,7 +117,7 @@ module lab1_imul_DatapathUnitAlt
   vc_LeftLogicalShifter
   #(
     .p_nbits(32),
-    .p_shamt_nbits(5)
+    .p_shamt_nbits(4)
   ) left_shift (
     .in(a_reg_out),
     .shamt(shift_amount),
@@ -146,7 +149,6 @@ module lab1_imul_DatapathUnitAlt
   logic [31:0] result_adder_out; //output of adder
   logic [31:0] result_adder_mux_out; //mux output
 
-  logic [4:0] shift_amount;// tracks consecutive 0s, by shifting in 1 step, no. of cycles reduced
   // logic [2:0] shift_amount; //for LUT
 
   assign ostream_msg = result_reg_out;
@@ -206,14 +208,12 @@ module lab1_imul_DatapathUnitAlt
 
   always_comb
   begin
-    if (b_reg_out == 0)
-      shift_amount = 0;
-    else if (b_reg_out[3:0] == 0)
+    if (b_reg_out[7:0] == 8'b0)
+      shift_amount = 8;
+    else if (b_reg_out[3:0] == 4'b0)
       shift_amount = 4;
-    else if(b_reg_out[1:0] == 0)
+    else if(b_reg_out[1:0] == 2'b0)
       shift_amount = 2;
-    else if(b_reg_out[0] == 0)
-      shift_amount = 1;
     else
       shift_amount = 1;
   end
@@ -227,20 +227,21 @@ endmodule
 
 module lab1_imul_ControlUnitAlt
 (
-  input  logic clk,
-  input  logic reset,
+  input  logic        clk,
+  input  logic        reset,
 
-  output logic istream_rdy,
-  input  logic istream_val,
-  input  logic ostream_rdy,
-  output logic ostream_val,
+  output logic        istream_rdy,
+  input  logic        istream_val,
+  input  logic        ostream_rdy,
+  output logic        ostream_val,
 
-  input  logic b_lsb,
-  output logic b_mux_sel,
-  output logic a_mux_sel,
-  output logic result_mux_sel,
-  output logic add_mux_sel,
-  output logic result_en
+  input  logic        b_lsb,
+  input  logic [3:0]  shift_amount,
+  output logic        b_mux_sel,
+  output logic        a_mux_sel,
+  output logic        result_mux_sel,
+  output logic        add_mux_sel,
+  output logic        result_en
 );
 
   typedef enum logic [1:0] {
@@ -264,7 +265,7 @@ module lab1_imul_ControlUnitAlt
   always_ff @(posedge clk)
   begin
     if (reset)                    counter <= 0;
-    else if (curr_state == CALC)  counter <= counter + 1;
+    else if (curr_state == CALC)  counter <= counter + {2'b0, shift_amount};
     else                          counter <= 0;
   end
 
@@ -303,7 +304,7 @@ module lab1_imul_ControlUnitAlt
         b_mux_sel       = 0;
         result_mux_sel  = 0;
         a_mux_sel       = 0;
-        result_en       = 1; // should this be 0 or 1?
+        result_en       = 1;
         add_mux_sel     = 0;
         istream_rdy     = 1;
         ostream_val     = 0;
@@ -368,12 +369,13 @@ module lab1_imul_IntMulAlt
   // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
   //control signals passed from control unit to data unit
-  logic b_lsb;
-  logic b_mux_sel;
-  logic a_mux_sel;
-  logic result_mux_sel;
-  logic add_mux_sel;
-  logic result_en;
+  logic       b_lsb;
+  logic       b_mux_sel;
+  logic       a_mux_sel;
+  logic       result_mux_sel;
+  logic       add_mux_sel;
+  logic       result_en;
+  logic [3:0] shift_amount;
 
   lab1_imul_ControlUnitAlt controlUnitAlt_I
   (
@@ -386,6 +388,7 @@ module lab1_imul_IntMulAlt
     .ostream_val    (ostream_val),
 
     .b_lsb          (b_lsb),
+    .shift_amount   (shift_amount),
     .b_mux_sel      (b_mux_sel),
     .a_mux_sel      (a_mux_sel),
     .result_mux_sel (result_mux_sel),
@@ -408,7 +411,8 @@ module lab1_imul_IntMulAlt
     .istream_msg    (istream_msg),
     .ostream_msg    (ostream_msg),
 
-    .b_lsb          (b_lsb)
+    .b_lsb          (b_lsb),
+    .shift_amount   (shift_amount)
   );
 
   //----------------------------------------------------------------------
