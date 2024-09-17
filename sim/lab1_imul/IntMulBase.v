@@ -38,18 +38,29 @@ module lab1_imul_DatapathUnitBase
 
   // Circuit for b
   logic [31:0] b_mux_out;
-  logic [31:0] b_reg_out;
+  logic [31:0] b_reg_out;  
+  logic [31:0] b_shifted_out;
 
   assign b_lsb = b_reg_out[0];
 
-  vc_Mux2
+  vc_RightLogicalShifter
   #(
-    .p_nbits(32)
+    .p_nbits(32),
+    .p_shamt_nbits(5) 
+  ) right_shift (
+    .in(b_reg_out),
+    .shamt(1),
+    .out(b_shifted_out)
+  );
+
+  vc_Mux2 //2-1 multiplexer
+  #(
+    .p_nbits(32) //input and output are 32 b long
   ) b_mux (
-    .in0(istream_msg[31:0]),
-    .in1(b_reg_out >> 1),
-    .sel(b_mux_sel),
-    .out(b_mux_out)
+    .in0(istream_msg[31:0]), //first 32 b of the 64 b input message is b
+    .in1(b_shifted_out), //output of b circuit after being shifted by 'shift_amount' to the right
+    .sel(b_mux_sel), //selection line for b mux
+    .out(b_mux_out) //output of b mux = input to b_reg
   );
 
   vc_Reg
@@ -64,15 +75,26 @@ module lab1_imul_DatapathUnitBase
   // Circuit for a
   logic [31:0] a_mux_out;
   logic [31:0] a_reg_out;
+  logic [31:0] a_shifted_out;
 
-  vc_Mux2
+  vc_LeftLogicalShifter
   #(
-    .p_nbits(32)
+    .p_nbits(32),
+    .p_shamt_nbits(5)
+  ) left_shift (
+    .in(a_reg_out),
+    .shamt(1),
+    .out(a_shifted_out)
+  );
+
+  vc_Mux2 //2-1 multiplexer
+  #(
+    .p_nbits(32) //input and output are 32 b long
   ) a_mux (
-    .in0(istream_msg[63:32]),
-    .in1(a_reg_out << 1),
-    .sel(a_mux_sel),
-    .out(a_mux_out)
+    .in0(istream_msg[63:32]), //last 32 b of the 64 b input message is s
+    .in1(a_shifted_out),//output of a circuit after being shifted by shift_amount to the left
+    .sel(a_mux_sel), //selection line for a mux
+    .out(a_mux_out) //output of a mux = input to a_reg
   );
 
   vc_Reg
