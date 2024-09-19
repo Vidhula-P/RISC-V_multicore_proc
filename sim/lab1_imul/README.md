@@ -1,9 +1,5 @@
-**QUESTIONS FOR TA:**
-- How to differentiate random tests for testing and evaluating?
-- What is lohimask? (Implemented masking middle for now)
-
 Hey Vidhula, Hubert here, just using this temporarily as a place to track where we are individually with our work, so that we can collaborate better.
-Also a good place to leave notes for one another to make the work / the eventual report easier. README change test
+Also a good place to leave notes for one another to make the work / the eventual report easier.
 
 ### Hubert's Task List:
 - [x] IntMulBase: Defined datapath unit for lab1_imul_IntMulBase
