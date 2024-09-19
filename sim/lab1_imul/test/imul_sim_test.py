@@ -10,7 +10,7 @@ from subprocess import check_call, CalledProcessError
 from itertools  import product
 
 impls  = [ "fl", "base", "alt" ]
-inputs = [ "small", "basic", "random", "sparse", "dense"]
+inputs = [ "basic","negpos", "posneg","random","lomask", "midmask","sparse", "dense"]
 
 test_cases = []
 for input_ in inputs:
