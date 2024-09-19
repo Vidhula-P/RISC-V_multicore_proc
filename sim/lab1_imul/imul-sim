@@ -77,11 +77,61 @@ def mk_imsg_mmask(a, b, start_bit, end_bit): # modified mk_imsg to accomodate ma
 # Data Set: random small
 #----------------------------------------------------------------------
 
-random_small_msgs = []
+small_pos_neg_msgs = []
+small_pos_neg_msgs.extend([mk_imsg(  2,  -3 ), mk_omsg(   -6 ),])
+small_pos_neg_msgs.extend([mk_imsg(  4,  -5 ), mk_omsg(  -20 ),])
+small_pos_neg_msgs.extend([mk_imsg(  3,  -4 ), mk_omsg(  -12 ),])
+small_pos_neg_msgs.extend([mk_imsg( 10, -13 ), mk_omsg( -130 ),])
+small_pos_neg_msgs.extend([mk_imsg(  8,  -7 ), mk_omsg(  -56 ),])
+
+
+#----------------------------------------------------------------------
+# Data Set: random small neg pos
+#----------------------------------------------------------------------
+
+# Tests that cause output to overflow (input more than 16 bits twos complement)
+small_neg_pos_msgs = []
+small_neg_pos_msgs.extend([mk_imsg(  -2,  3 ), mk_omsg(   -6 ),])
+small_neg_pos_msgs.extend([mk_imsg(  -4,  5 ), mk_omsg(  -20 ),])
+small_neg_pos_msgs.extend([mk_imsg(  -3,  4 ), mk_omsg(  -12 ),])
+small_neg_pos_msgs.extend([mk_imsg( -10, 13 ), mk_omsg( -130 ),])
+small_neg_pos_msgs.extend([mk_imsg(  -8,  7 ), mk_omsg(  -56 ),])
+
+#----------------------------------------------------------------------
+# Data Set: random
+#----------------------------------------------------------------------
+
+random_msgs = []
 for i in range(50):
-  a = randint(0,100)
-  b = randint(0,100)
-  random_small_msgs.extend([ mk_imsg( a, b ), mk_omsg( a * b ) ])
+  rand_a = randint(-2147483648, 2147483647)
+  rand_b = randint(-2147483648, 2147483647)
+  random_msgs.extend([mk_imsg(rand_a, rand_b),  mk_omsg(rand_a * rand_b)])
+
+
+#----------------------------------------------------------------------
+# Data Set: random lomask
+#----------------------------------------------------------------------
+random_lomask = []
+for i in range(50):
+  rand_a = randint(-2147483648, 2147483647)
+  rand_b = randint(-2147483648, 2147483647)
+  num_bits_to_mask = randint(0, 31)
+  masked_rand_a = perform_lmask(rand_a, num_bits_to_mask)
+  masked_rand_b = perform_lmask(rand_b, num_bits_to_mask)
+  random_lomask.extend([mk_imsg_lmask(rand_a, rand_b, num_bits_to_mask), mk_omsg(masked_rand_a * masked_rand_b)])
+
+#----------------------------------------------------------------------
+# Data Set: random middle
+#----------------------------------------------------------------------
+random_mmask = []
+for i in range(50):
+  rand_a = randint(-2147483648, 2147483647)
+  rand_b = randint(-2147483648, 2147483647)
+  start_bit = randint(0, 31)
+  end_bit = randint(start_bit, 31)
+  masked_rand_a = perform_mmask(rand_a, start_bit, end_bit)
+  masked_rand_b = perform_mmask(rand_b, start_bit, end_bit)
+  random_mmask.extend([mk_imsg_mmask(rand_a, rand_b, start_bit, end_bit), mk_omsg(masked_rand_a * masked_rand_b)])
 
 #----------------------------------------------------------------------
 # Data Set: basic
@@ -181,8 +231,8 @@ def parse_cmdline():
   p.add_argument( "--impl", default="fl",
     choices=["fl","base","alt"] )
 
-  p.add_argument( "--input", default="small",
-    choices=["small", "basic", "random", "sparse", "dense"] )
+  p.add_argument( "--input", default="basic",
+    choices=["basic","negpos", "posneg","random","lomask", "midmask","sparse", "dense"] )
 
   p.add_argument( "--trace",     action="store_true" )
   p.add_argument( "--stats",     action="store_true" )
@@ -204,12 +254,18 @@ def main():
 
   inputs  = None
 
-  if opts.input == "small":
-    inputs = random_small_msgs
+  if opts.input == "posneg":
+    inputs = small_pos_neg_msgs
+  elif opts.input == "negpos":
+    inputs = small_neg_pos_msgs
   elif opts.input == "basic":
     inputs = basic_msgs
   elif opts.input == "random":
     inputs = random_msgs
+  elif opts.input == "lomask":
+    inputs = random_lomask
+  elif opts.input == "midmask":
+    inputs = random_mmask
   elif opts.input == "sparse":
     inputs = sparse_msgs
   elif opts.input == "dense":
