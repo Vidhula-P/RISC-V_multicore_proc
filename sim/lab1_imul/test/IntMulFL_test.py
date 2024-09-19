@@ -236,6 +236,7 @@ large_neg_neg_msgs = [
 low_mask_msgs = [
   # Up to 16 bit twos complement
   mk_imsg_lmask(  239,        453,         2 ), mk_omsg(              106672 ),
+  mk_imsg_lmask(  985,        1259,        6 ), mk_omsg(             1167360 ),
   mk_imsg_lmask(  8920,       15502,       8 ), mk_omsg(          133693440  ),
   # More than 16 bit twos complement
   mk_imsg_lmask(  47847382,   739006219,   15), mk_omsg(  35353937397678080  ),
@@ -248,6 +249,7 @@ low_mask_msgs = [
 mid_mask_msgs = [
   # Up to 16 bit twos complement
   mk_imsg_mmask(  239,        453,         2,    4 ),  mk_omsg(            101923 ),
+  mk_imsg_mmask(  985,        1259,        6,    10 ), mk_omsg(              1075 ),
   mk_imsg_mmask(  8920,       15502,       4,    11 ), mk_omsg(         100876400 ),
   # More than 16 bit twos complement
   mk_imsg_mmask(  47847382,   739006219,   7,    19),  mk_omsg( 34832592371975090 ),
