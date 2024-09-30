@@ -11,6 +11,13 @@
 `include "vc/regs.v"
 `include "vc/arithmetic.v"
 
+//=========================================================================
+// Datapath Unit
+// - Handles operand shifting, addition, and result accumulation.
+// - Implements variable-latency iteration by adjusting shifts based on 
+//   the number of leading zeros in the multiplier.
+//=========================================================================
+
 module lab1_imul_DatapathUnitAlt
 (
   input  logic        clk,
@@ -33,6 +40,12 @@ module lab1_imul_DatapathUnitAlt
   /* verilator lint_off unused */
   logic result_adder_cout_null;
   /* verilator lint_on unused */
+
+  //-------------------------------------------------------------------------
+  // Operand 'b' processing: shift and register
+  // - Shift operand 'b' right based on calculated shift amount.
+  // - Accumulate shifts in a register for iterative computation.
+  //-------------------------------------------------------------------------
 
   // For 32-bit input b
   logic [31:0] b_mux_out;
@@ -70,7 +83,12 @@ module lab1_imul_DatapathUnitAlt
     .q  (b_reg_out)
   );
 
-  // For 32-bit input a
+  //-------------------------------------------------------------------------
+  // Operand 'a' processing: shift and register
+  // - Shift operand 'a' left based on the calculated shift amount.
+  // - Accumulate shifts in a register for iterative computation.
+  //-------------------------------------------------------------------------
+
   logic [31:0] a_mux_out;
   logic [31:0] a_reg_out;
   logic [31:0] a_shifted_out;
@@ -104,7 +122,11 @@ module lab1_imul_DatapathUnitAlt
     .q  (a_reg_out)
   );
 
-  // Circuit for result
+  //-------------------------------------------------------------------------
+  // Result accumulation
+  // - Accumulate partial sums based on shifted operands.
+  //-------------------------------------------------------------------------
+  
   logic [31:0] result_mux_out;
   logic [31:0] result_reg_out;
   logic [31:0] result_adder_out;
@@ -154,14 +176,21 @@ module lab1_imul_DatapathUnitAlt
     .out(result_adder_mux_out)
   );
 
+  //-------------------------------------------------------------------------
   // Additional datapath logic for alt design
-  // Skips 8, or 4, or 2, or 1 consecutive zeros
+  // - Skips consecutive zeros in operand 'b' to reduce iteration count
+  //-------------------------------------------------------------------------
+
   always_comb
   begin
     if (b_reg_out[7:0] == 8'b0)
       shift_amount = 8;
+    else if (b_reg_out[4:0] == 5'b0) //added as per recommendation after evaluation
+      shift_amount = 5;
     else if (b_reg_out[3:0] == 4'b0)
       shift_amount = 4;
+    else if (b_reg_out[2:0] == 3'b0) //added as per recommendation after evaluation
+      shift_amount = 3;
     else if(b_reg_out[1:0] == 2'b0)
       shift_amount = 2;
     else
@@ -169,6 +198,12 @@ module lab1_imul_DatapathUnitAlt
   end
 
 endmodule
+
+//=========================================================================
+// Control Unit
+// - Manages state transitions and control signals for the datapath.
+// - Implements a variable-latency FSM.
+//=========================================================================
 
 module lab1_imul_ControlUnitAlt
 (

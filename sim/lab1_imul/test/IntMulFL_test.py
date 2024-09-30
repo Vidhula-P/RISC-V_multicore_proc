@@ -307,46 +307,46 @@ for i in range(30):
 test_case_table = mk_test_case_table([
   (                      "msgs                   src_delay sink_delay"),
   [ "small_pos_pos_1",     small_pos_pos_msgs,     0,        0          ],
-  [ "small_pos_pos_2",     small_pos_pos_msgs,     0,        1          ],
+  [ "small_pos_pos_2",     small_pos_pos_msgs,     0,        50         ],
 
   [ "basic_1",             basic_msgs,             0,        0          ],
-  [ "basic_2",             basic_msgs,             1,        0          ],
+  [ "basic_2",             basic_msgs,             100,      0          ],
 
   [ "small_pos_neg_1",     small_pos_neg_msgs,     0,        0          ],
-  [ "small_pos_neg_2",     small_pos_neg_msgs,     0,        2          ],
+  [ "small_pos_neg_2",     small_pos_neg_msgs,     0,        92         ],
 
   [ "small_neg_pos_1",     small_neg_pos_msgs,     0,        0          ],
-  [ "small_neg_pos_2",     small_neg_pos_msgs,     2,        0          ],
+  [ "small_neg_pos_2",     small_neg_pos_msgs,     26,       0          ],
 
   [ "small_neg_neg_1",     small_neg_neg_msgs,     0,        0          ],
-  [ "small_neg_neg_2",     small_neg_neg_msgs,     2,        1          ],
+  [ "small_neg_neg_2",     small_neg_neg_msgs,     62,       1          ],
 
   [ "large_pos_pos_1",     large_pos_pos_msgs,     0,        0          ],
-  [ "large_pos_pos_2",     large_pos_pos_msgs,     1,        2          ],
+  [ "large_pos_pos_2",     large_pos_pos_msgs,     110,      86         ],
 
   [ "large_pos_neg_1",     large_pos_neg_msgs,     0,        0          ],
-  [ "large_pos_neg_2",     large_pos_neg_msgs,     0,        3          ],
+  [ "large_pos_neg_2",     large_pos_neg_msgs,     0,        38         ],
 
   [ "large_neg_pos_1",     large_neg_pos_msgs,     0,        0          ],
-  [ "large_neg_pos_2",     large_neg_pos_msgs,     3,        0          ],
+  [ "large_neg_pos_2",     large_neg_pos_msgs,     83,       0          ],
 
   [ "large_neg_neg_1",     large_neg_neg_msgs,     0,        0          ],
-  [ "large_neg_neg_2",     large_neg_neg_msgs,     3,        5          ],
+  [ "large_neg_neg_2",     large_neg_neg_msgs,     83,       59         ],
 
   [ "lower_bits_mask_1",   low_mask_msgs,          0,        0          ],
-  [ "lower_bits_mask_2",   low_mask_msgs,          0,       10          ],
+  [ "lower_bits_mask_2",   low_mask_msgs,          0,        120        ],
 
   [ "middle_bits_mask_1",  mid_mask_msgs,          0,        0          ],
-  [ "middle_bits_mask_2",  mid_mask_msgs,         10,        0          ],
+  [ "middle_bits_mask_2",  mid_mask_msgs,          40,       0          ],
 
   [ "sparse_bits_1",       sparse_msgs,            0,        0          ],
-  [ "sparse_bits_2",       sparse_msgs,            2,        7          ],
+  [ "sparse_bits_2",       sparse_msgs,            60,       47         ],
 
   [ "dense_bits_1",        dense_msgs,             0,        0          ],
-  [ "dense_bits_2",        dense_msgs,             9,        1          ],
+  [ "dense_bits_2",        dense_msgs,             59,       73         ],
 
   [ "random_tests_1",      random_msgs,            0,        0          ],
-  [ "random_tests_2",      random_msgs,            2,        6          ],
+  [ "random_tests_2",      random_msgs,            72,       61         ]
 ])
 
 #-------------------------------------------------------------------------
