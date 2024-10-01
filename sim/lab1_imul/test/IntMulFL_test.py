@@ -305,48 +305,61 @@ for i in range(30):
 #-------------------------------------------------------------------------
 
 test_case_table = mk_test_case_table([
-  (                      "msgs                   src_delay sink_delay"),
-  [ "small_pos_pos_1",     small_pos_pos_msgs,     0,        0          ],
-  [ "small_pos_pos_2",     small_pos_pos_msgs,     0,        50         ],
+  (                        "msgs                   src_delay sink_delay"),
+  [ "small_pos_pos_1",      small_pos_pos_msgs,     0,        0         ],
+  [ "small_pos_pos_2",      small_pos_pos_msgs,     100,      0         ],
+  [ "small_pos_pos_3",      small_pos_pos_msgs,     0,        52        ],
 
-  [ "basic_1",             basic_msgs,             0,        0          ],
-  [ "basic_2",             basic_msgs,             100,      0          ],
+  [ "basic_1",              basic_msgs,             0,        0         ],
+  [ "basic_2",              basic_msgs,             40,       0         ],
+  [ "basic_3",              basic_msgs,             0,        37        ],
 
-  [ "small_pos_neg_1",     small_pos_neg_msgs,     0,        0          ],
-  [ "small_pos_neg_2",     small_pos_neg_msgs,     0,        92         ],
+  [ "small_pos_neg_1",      small_pos_neg_msgs,     95,       0         ],
+  [ "small_pos_neg_2",      small_pos_neg_msgs,     0,        92        ],
+  [ "small_pos_neg_3",      small_pos_neg_msgs,     64,       0         ],
 
-  [ "small_neg_pos_1",     small_neg_pos_msgs,     0,        0          ],
-  [ "small_neg_pos_2",     small_neg_pos_msgs,     26,       0          ],
+  [ "small_neg_pos_1",      small_neg_pos_msgs,     0,        0         ],
+  [ "small_neg_pos_2",      small_neg_pos_msgs,     36,       0         ],
+  [ "small_neg_pos_3",      small_neg_pos_msgs,     36,       46        ],
 
-  [ "small_neg_neg_1",     small_neg_neg_msgs,     0,        0          ],
-  [ "small_neg_neg_2",     small_neg_neg_msgs,     62,       1          ],
+  [ "small_neg_neg_1",      small_neg_neg_msgs,     0,        0         ],
+  [ "small_neg_neg_2",      small_neg_neg_msgs,     62,       1         ],
 
-  [ "large_pos_pos_1",     large_pos_pos_msgs,     0,        0          ],
-  [ "large_pos_pos_2",     large_pos_pos_msgs,     110,      86         ],
+  [ "large_pos_pos_1",      large_pos_pos_msgs,     0,        0         ],
+  [ "large_pos_pos_2",      large_pos_pos_msgs,     110,      86        ],
 
-  [ "large_pos_neg_1",     large_pos_neg_msgs,     0,        0          ],
-  [ "large_pos_neg_2",     large_pos_neg_msgs,     0,        38         ],
+  [ "large_pos_neg_1",      large_pos_neg_msgs,     0,        0         ],
+  [ "large_pos_neg_2",      large_pos_neg_msgs,     0,        38        ],
 
-  [ "large_neg_pos_1",     large_neg_pos_msgs,     0,        0          ],
-  [ "large_neg_pos_2",     large_neg_pos_msgs,     83,       0          ],
+  [ "large_neg_pos_1",      large_neg_pos_msgs,     0,        0         ],
+  [ "large_neg_pos_2",      large_neg_pos_msgs,     83,       0         ],
 
-  [ "large_neg_neg_1",     large_neg_neg_msgs,     0,        0          ],
-  [ "large_neg_neg_2",     large_neg_neg_msgs,     83,       59         ],
+  [ "large_neg_neg_1",      large_neg_neg_msgs,     0,        0         ],
+  [ "large_neg_neg_2",      large_neg_neg_msgs,     83,       59        ],
 
-  [ "lower_bits_mask_1",   low_mask_msgs,          0,        0          ],
-  [ "lower_bits_mask_2",   low_mask_msgs,          0,        120        ],
+  [ "lower_bits_mask_1",    low_mask_msgs,          0,        0         ],
+  [ "lower_bits_mask_2",    low_mask_msgs,          0,        120       ],
 
-  [ "middle_bits_mask_1",  mid_mask_msgs,          0,        0          ],
-  [ "middle_bits_mask_2",  mid_mask_msgs,          40,       0          ],
+  [ "middle_bits_mask_1",   mid_mask_msgs,          0,        0         ],
+  [ "middle_bits_mask_2",   mid_mask_msgs,          40,       0         ],
 
-  [ "sparse_bits_1",       sparse_msgs,            0,        0          ],
-  [ "sparse_bits_2",       sparse_msgs,            60,       47         ],
+  [ "sparse_bits_1",        sparse_msgs,            0,        0         ],
+  [ "sparse_bits_2",        sparse_msgs,            60,       47        ],
 
-  [ "dense_bits_1",        dense_msgs,             0,        0          ],
-  [ "dense_bits_2",        dense_msgs,             59,       73         ],
+  [ "dense_bits_1",         dense_msgs,             0,        0         ],
+  [ "dense_bits_2",         dense_msgs,             59,       73        ],
 
-  [ "random_tests_1",      random_msgs,            0,        0          ],
-  [ "random_tests_2",      random_msgs,            72,       61         ]
+  [ "random_tests_1",       random_msgs,            0,        0         ],
+  [ "random_tests_2",       random_msgs,            72,       61        ],
+
+  [ "random_delay_tests_1", large_neg_neg_msgs,     randint(0,100), 0             ],
+  [ "random_delay_tests_2", basic_msgs,             0             , randint(0,100)],
+  [ "random_delay_tests_3", large_pos_neg_msgs,     randint(0,100), randint(0,100)],
+
+
+  [ "random_delay_tests_4", sparse_msgs,            randint(35,100), 0             ],
+  [ "random_delay_tests_5", dense_msgs,             0              , randint(35,100)],
+  [ "random_delay_tests_6", random_msgs,            randint(35,100), randint(35,100)],
 ])
 
 #-------------------------------------------------------------------------
