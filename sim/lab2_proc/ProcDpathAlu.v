@@ -5,6 +5,8 @@
 `ifndef LAB2_PROC_PROC_DPATH_ALU_V
 `define LAB2_PROC_PROC_DPATH_ALU_V
 
+`include "lab1_imul/IntMulAlt.v"
+
 `include "vc/arithmetic.v"
 
 module lab2_proc_ProcDpathAlu
@@ -28,6 +30,20 @@ module lab2_proc_ProcDpathAlu
       //''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''
       // Add more alu function
       //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+      4'd1    : out = in0 + (~in1 + 1);                         // SUB
+      4'd2    : out = in0 & in1;                                // AND
+      4'd3    : out = in0 | in1;                                // OR
+      4'd4    : out = in0 ^ in1;                                // XOR
+      4'd5    : begin                                           // SLT
+                if      ((in0[31]==1'b1) && (in1[31]==1'b0)) out = 32'b1;
+                else if ((in0[31]==1'b0) && (in1[31]==1'b1)) out = 32'b0;
+                else    out = (in0 < in1) ? 32'b1 : 32'b0;
+                end
+      4'd6    : out = (in0 < in1) ? 32'b1 : 32'b0;              // SLTU
+      4'd7    : out = in0 >>> in1[4:0];                         // SRA
+      4'd8    : out = in0 >> in1[4:0];                          // SRL
+      4'd9    : out = in0 << in1[4:0];                          // SLL
 
       default : out = 32'b0;
     endcase
