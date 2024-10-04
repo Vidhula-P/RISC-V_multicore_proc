@@ -5,8 +5,6 @@
 `ifndef LAB2_PROC_PROC_DPATH_ALU_V
 `define LAB2_PROC_PROC_DPATH_ALU_V
 
-`include "lab1_imul/IntMulAlt.v"
-
 `include "vc/arithmetic.v"
 
 module lab2_proc_ProcDpathAlu

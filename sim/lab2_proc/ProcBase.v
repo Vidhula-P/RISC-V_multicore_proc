@@ -191,12 +191,14 @@ module lab2_proc_ProcBase
   logic [1:0]  pc_sel_F;
 
   logic        reg_en_D;
+  logic        op1_sel_D;
   logic [1:0]  op2_sel_D;
   logic [1:0]  csrr_sel_D;
   logic [2:0]  imm_type_D;
 
   logic        reg_en_X;
   logic [3:0]  alu_fn_X;
+  logic [1:0]  ex_result_sel_X;
 
   logic        reg_en_M;
   logic        wb_result_sel_M;
@@ -205,6 +207,11 @@ module lab2_proc_ProcBase
   logic [4:0]  rf_waddr_W;
   logic        rf_wen_W;
   logic        stats_en_wen_W;
+
+  logic        imul_req_val_D;
+  logic        imul_req_rdy_D;
+  logic        imul_resp_val_X;
+  logic        imul_resp_rdy_X;
 
   // status signals (dpath->ctrl)
 
