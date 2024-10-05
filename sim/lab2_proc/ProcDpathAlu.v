@@ -43,6 +43,8 @@ module lab2_proc_ProcDpathAlu
       4'd8    : out = in0 >> in1[4:0];                          // SRL
       4'd9    : out = in0 << in1[4:0];                          // SLL
 
+      4'd10   : out = (in0 + in1) & 32'hFFFFFFFE;               // JALR
+
       default : out = 32'b0;
     endcase
 

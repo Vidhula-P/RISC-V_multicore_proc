@@ -259,6 +259,7 @@ module lab2_proc_ProcBaseCtrl
   localparam br_na    = 3'd0; // No branch
   localparam br_bne   = 3'd1; // bne
   localparam br_jal   = 3'd2; // jal
+  localparam br_jalr  = 3'd3; // jalr
 
   // Operand 1 Mux Select
 
@@ -288,6 +289,8 @@ module lab2_proc_ProcBaseCtrl
   localparam alu_sra  = 4'd7;
   localparam alu_srl  = 4'd8;
   localparam alu_sll  = 4'd9;
+
+  localparam alu_jalr = 4'd10;
 
   localparam alu_cp0  = 4'd11;
   localparam alu_cp1  = 4'd12;
@@ -409,6 +412,7 @@ module lab2_proc_ProcBaseCtrl
       `TINYRV2_INST_SW      :cs( y, br_na,  imm_s, y, bm1_rf, bm_imm, y, alu_add,  n,   ex_res_alu, st, wm_x, y,  n,   n    );
 
       `TINYRV2_INST_JAL     :cs( y, br_jal, imm_j, n, bm1_pc, bm_imm, n, alu_add,  n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
+      `TINYRV2_INST_JALR    :cs( y, br_jalr,imm_i, y, bm1_rf, bm_imm, n, alu_jalr, n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
 
       default               :cs( n, br_x,   imm_x, n, bm1_x,  bm_x,   n, alu_x,    n,   ex_res_alu, nr, wm_x, n,  n,   n    );
 
@@ -581,6 +585,10 @@ module lab2_proc_ProcBaseCtrl
     if ( val_X && ( br_type_X == br_bne ) ) begin
       pc_redirect_X = !br_cond_eq_X;
       pc_sel_X      = 2'b1; // use branch target
+    end
+    else if ( val_X && ( br_type_X == br_jalr ) ) begin
+      pc_redirect_X = 1'b1;
+      pc_sel_X      = 2'd3; // use jalr target
     end
     else begin
       pc_redirect_X = 1'b0;
