@@ -50,6 +50,7 @@ module lab2_proc_ProcBaseCtrl
   output logic        reg_en_X,
   output logic [3:0]  alu_fn_X,
   output logic [1:0]  ex_result_sel_X,
+  output logic [1:0]  dmem_type_X,
 
   output logic        reg_en_M,
   output logic        wb_result_sel_M,
@@ -401,6 +402,8 @@ module lab2_proc_ProcBaseCtrl
 
       `TINYRV2_INST_MUL     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_x,    y,   ex_res_mul, nr, wm_a, y,  n,   n    );
 
+      `TINYRV2_INST_SW      :cs( y, br_na,  imm_s, y, bm1_rf, bm_imm, y, alu_add,  n,   ex_res_alu, st, wm_x, y,  n,   n    );
+
       default               :cs( n, br_x,   imm_x, n, bm1_x,  bm_x,   n, alu_x,    n,   ex_res_alu, nr, wm_x, n,  n,   n    );
 
     endcase
@@ -524,7 +527,6 @@ module lab2_proc_ProcBaseCtrl
   assign reg_en_X = !stall_X;
 
   logic [31:0] inst_X;
-  logic [1:0]  dmem_type_X;
   logic        mul_used_X;
   logic        wb_result_sel_X;
   logic        rf_wen_X;

@@ -33,6 +33,8 @@ module lab2_proc_ProcBaseDpath
   // Data Memory Port
 
   output logic [31:0]  dmem_reqstream_msg_addr,
+  output logic [31:0]  dmem_reqstream_msg_data,
+
   input  logic [31:0]  dmem_respstream_msg_data,
 
   // mngr communication ports
@@ -295,6 +297,15 @@ module lab2_proc_ProcBaseDpath
     .en    (reg_en_X),
     .d     (jal_target_D),
     .q     (br_target_X)
+  );
+
+  vc_EnResetReg#(32) dmem_write_data_reg_X
+  (
+    .clk    (clk),
+    .reset  (reset),
+    .en     (reg_en_X),
+    .d      (rf_rdata1_D),
+    .q      (dmem_reqstream_msg_data)
   );
 
   logic [31:0] alu_result_X;
