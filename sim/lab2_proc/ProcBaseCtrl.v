@@ -166,12 +166,16 @@ module lab2_proc_ProcBaseCtrl
 
   logic       pc_redirect_X;
   logic [1:0] pc_sel_X;
+  logic       pc_redirect_D;
+  logic [1:0] pc_sel_D;
 
   // PC select logic
 
   always_comb begin
     if ( pc_redirect_X )   // If a branch is taken in X stage
       pc_sel_F = pc_sel_X; // Use pc from X
+    else if (pc_redirect_D) // If a jump is taken in D stage
+      pc_sel_F = pc_sel_D;  // Use pc from D
     else
       pc_sel_F = 2'b0;     // Use pc+4
   end
@@ -252,8 +256,9 @@ module lab2_proc_ProcBaseCtrl
   // Branch type
 
   localparam br_x     = 3'bx; // Don't care
-  localparam br_na    = 3'b0; // No branch
-  localparam br_bne   = 3'b1; // bne
+  localparam br_na    = 3'd0; // No branch
+  localparam br_bne   = 3'd1; // bne
+  localparam br_jal   = 3'd2; // jal
 
   // Operand 1 Mux Select
 
@@ -395,7 +400,6 @@ module lab2_proc_ProcBaseCtrl
 
       `TINYRV2_INST_SLT     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_slt,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
       `TINYRV2_INST_SLTU    :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_sltu, n,   ex_res_alu, nr, wm_a, y,  n,   n    );
-
       `TINYRV2_INST_SRA     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_sra,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
       `TINYRV2_INST_SRL     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_srl,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
       `TINYRV2_INST_SLL     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_sll,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
@@ -403,6 +407,8 @@ module lab2_proc_ProcBaseCtrl
       `TINYRV2_INST_MUL     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_x,    y,   ex_res_mul, nr, wm_a, y,  n,   n    );
 
       `TINYRV2_INST_SW      :cs( y, br_na,  imm_s, y, bm1_rf, bm_imm, y, alu_add,  n,   ex_res_alu, st, wm_x, y,  n,   n    );
+
+      `TINYRV2_INST_JAL     :cs( y, br_jal, imm_j, n, bm1_pc, bm_imm, n, alu_add,  n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
 
       default               :cs( n, br_x,   imm_x, n, bm1_x,  bm_x,   n, alu_x,    n,   ex_res_alu, nr, wm_x, n,  n,   n    );
 
@@ -492,9 +498,9 @@ module lab2_proc_ProcBaseCtrl
   // Additional: Originate a stall if the multiplier is not ready to accept a new signal
   assign ostall_D = val_D && ( ostall_mngr2proc_D || ostall_hazard_D || !imul_req_rdy_D);
 
-  // osquash due to jump instruction in D stage (not implemented yet)
+  // osquash due to jump instruction in D stage
 
-  assign osquash_D = 1'b0;
+  assign osquash_D = val_D && !stall_D && pc_redirect_D;
 
   // stall and squash in D
 
@@ -505,6 +511,19 @@ module lab2_proc_ProcBaseCtrl
 
   logic  next_val_D;
   assign next_val_D = val_D && !stall_D && !squash_D;
+
+  // branch logic, redirect PC in F if jump is taken
+
+  always_comb begin
+    if ( val_D && (br_type_D == br_jal) ) begin
+      pc_redirect_D = 1'b1;
+      pc_sel_D      = 2'd2; // use JAL target
+    end
+    else begin
+      pc_redirect_D = 1'b0;
+      pc_sel_D      = 2'b0; // use PC+4
+    end
+  end
 
   //----------------------------------------------------------------------
   // Iterative Multiplier

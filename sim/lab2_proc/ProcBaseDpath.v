@@ -256,21 +256,13 @@ module lab2_proc_ProcBaseDpath
     .ostream_msg(imul_resp_msg)
   );
 
-  vc_Mux3#(32) ex_result_sel_mux_X
-  (
-    .in0  (),
-    .in1  (alu_result_X),
-    .in2  (imul_resp_msg),
-    .sel  (ex_result_sel_X),
-    .out  (ex_result_X)
-  );
-
   //--------------------------------------------------------------------
   // X stage
   //--------------------------------------------------------------------
 
   logic [31:0] op1_X;
   logic [31:0] op2_X;
+  logic [31:0] pc_X;
 
   vc_EnResetReg#(32, 0) op1_reg_X
   (
@@ -308,6 +300,15 @@ module lab2_proc_ProcBaseDpath
     .q      (dmem_reqstream_msg_data)
   );
 
+  vc_EnResetReg#(32) pc_reg_X
+  (
+    .clk    (clk),
+    .reset  (reset),
+    .en     (reg_en_X),
+    .d      (pc_D),
+    .q      (pc_X)
+  );
+
   logic [31:0] alu_result_X;
   logic [31:0] ex_result_X;
 
@@ -323,6 +324,15 @@ module lab2_proc_ProcBaseDpath
   );
 
   assign dmem_reqstream_msg_addr = alu_result_X;
+
+  vc_Mux3#(32) ex_result_sel_mux_X
+  (
+    .in0  (pc_X + 32'd4),
+    .in1  (alu_result_X),
+    .in2  (imul_resp_msg),
+    .sel  (ex_result_sel_X),
+    .out  (ex_result_X)
+  );
 
   //--------------------------------------------------------------------
   // M stage
