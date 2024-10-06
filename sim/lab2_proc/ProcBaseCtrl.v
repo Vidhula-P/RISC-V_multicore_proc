@@ -409,6 +409,16 @@ module lab2_proc_ProcBaseCtrl
 
       `TINYRV2_INST_MUL     :cs( y, br_na,  imm_x, y, bm1_rf, bm_rf,  y, alu_x,    y,   ex_res_mul, nr, wm_a, y,  n,   n    );
 
+      `TINYRV2_INST_ADDI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_add,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_ORI      :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_or,   n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_ANDI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_and,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_XORI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_xor,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_SLTI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_slt,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_SLTIU    :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_sltu, n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_SRAI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_sra,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_SRLI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_srl,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_SLLI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_sll,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      
       `TINYRV2_INST_SW      :cs( y, br_na,  imm_s, y, bm1_rf, bm_imm, y, alu_add,  n,   ex_res_alu, st, wm_x, y,  n,   n    );
 
       `TINYRV2_INST_JAL     :cs( y, br_jal, imm_j, n, bm1_pc, bm_imm, n, alu_add,  n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
