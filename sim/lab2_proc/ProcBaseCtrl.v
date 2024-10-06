@@ -260,6 +260,7 @@ module lab2_proc_ProcBaseCtrl
   localparam br_bne   = 3'd1; // bne
   localparam br_jal   = 3'd2; // jal
   localparam br_jalr  = 3'd3; // jalr
+  localparam br_beq   = 3'd4; // beq
 
   // Operand 1 Mux Select
 
@@ -418,12 +419,16 @@ module lab2_proc_ProcBaseCtrl
       `TINYRV2_INST_SRAI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_sra,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
       `TINYRV2_INST_SRLI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_srl,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
       `TINYRV2_INST_SLLI     :cs( y, br_na,  imm_i, y, bm1_rf, bm_imm,  n, alu_sll,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
-      
+      `TINYRV2_INST_LUI      :cs( y, br_na,  imm_u, n, bm1_x,  bm_imm,  n, alu_x,    n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+      `TINYRV2_INST_AUIPC    :cs( y, br_na,  imm_u, n, bm1_pc, bm_imm,  n, alu_add,  n,   ex_res_alu, nr, wm_a, y,  n,   n    );
+
       `TINYRV2_INST_SW      :cs( y, br_na,  imm_s, y, bm1_rf, bm_imm, y, alu_add,  n,   ex_res_alu, st, wm_x, y,  n,   n    );
 
       `TINYRV2_INST_JAL     :cs( y, br_jal, imm_j, n, bm1_pc, bm_imm, n, alu_add,  n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
       `TINYRV2_INST_JALR    :cs( y, br_jalr,imm_i, y, bm1_rf, bm_imm, n, alu_jalr, n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
 
+      `TINYRV2_INST_BEQ     :cs( y, br_beq, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
+      
       default               :cs( n, br_x,   imm_x, n, bm1_x,  bm_x,   n, alu_x,    n,   ex_res_alu, nr, wm_x, n,  n,   n    );
 
     endcase
@@ -599,6 +604,10 @@ module lab2_proc_ProcBaseCtrl
     else if ( val_X && ( br_type_X == br_jalr ) ) begin
       pc_redirect_X = 1'b1;
       pc_sel_X      = 2'd3; // use jalr target
+    end
+    else if ( val_X && ( br_type_X == br_beq ) ) begin
+      pc_redirect_X = br_cond_eq_X;
+      pc_sel_X      = 2'b1; // use branch target
     end
     else begin
       pc_redirect_X = 1'b0;

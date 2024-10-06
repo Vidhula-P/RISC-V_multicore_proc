@@ -33,11 +33,12 @@ module lab2_proc_ProcDpathAlu
       4'd2    : out = in0 & in1;                                // AND
       4'd3    : out = in0 | in1;                                // OR
       4'd4    : out = in0 ^ in1;                                // XOR
-      4'd5    : begin                                           // SLT
+      4'd5    : /*begin                                           // SLT
                 if      ((in0[31]==1'b1) && (in1[31]==1'b0)) out = 32'b1;
                 else if ((in0[31]==1'b0) && (in1[31]==1'b1)) out = 32'b0;
                 else    out = (in0 < in1) ? 32'b1 : 32'b0;
-                end
+                end*/
+                out = ($signed(in0) < $signed(in1)) ? 32'b1 : 32'b0;
       4'd6    : out = (in0 < in1) ? 32'b1 : 32'b0;              // SLTU
       4'd7    : out = in0 >>> in1[4:0];                         // SRA
       4'd8    : out = in0 >> in1[4:0];                          // SRL

@@ -24,6 +24,13 @@ module lab2_proc_ProcDpathImmGen
       //''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''
       // Add more immediate types
       //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+      
+      3'd1: // S-type
+        imm = { {20{inst[31]}}, inst[30:25], inst[11:8], inst[7]};
+
+
+      3'd3: // U-type
+        imm = { inst[31], inst[30:20], inst[19:12], 12'b0 };
 
       3'd4: // J-type
         imm = { {11{inst[31]}}, inst[19:12], inst[20], inst[30:25], inst[24:21], 1'b0 };
