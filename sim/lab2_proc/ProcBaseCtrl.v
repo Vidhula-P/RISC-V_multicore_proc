@@ -69,6 +69,8 @@ module lab2_proc_ProcBaseCtrl
 
   input  logic [31:0] inst_D,
   input  logic        br_cond_eq_X,
+  input  logic        br_cond_lt_X,
+  input  logic        br_cond_ltu_X,
 
   // extra ports
 
@@ -255,12 +257,16 @@ module lab2_proc_ProcBaseCtrl
 
   // Branch type
 
-  localparam br_x     = 3'bx; // Don't care
-  localparam br_na    = 3'd0; // No branch
-  localparam br_bne   = 3'd1; // bne
-  localparam br_jal   = 3'd2; // jal
-  localparam br_jalr  = 3'd3; // jalr
-  localparam br_beq   = 3'd4; // beq
+  localparam br_x     = 4'bx; // Don't care
+  localparam br_na    = 4'd0; // No branch
+  localparam br_bne   = 4'd1; // bne
+  localparam br_jal   = 4'd2; // jal
+  localparam br_jalr  = 4'd3; // jalr
+  localparam br_beq   = 4'd4; // beq
+  localparam br_blt   = 4'd5; // blt
+  localparam br_bltu  = 4'd6; // bltu
+  localparam br_bge   = 4'd7; // bge
+  localparam br_bgeu  = 4'd8; // bgeu
 
   // Operand 1 Mux Select
 
@@ -326,7 +332,7 @@ module lab2_proc_ProcBaseCtrl
   // Instruction Decode
 
   logic       inst_val_D;
-  logic [2:0] br_type_D;
+  logic [3:0] br_type_D;
   logic       rs1_en_D;
   logic       rs2_en_D;
   logic [3:0] alu_fn_D;
@@ -344,7 +350,7 @@ module lab2_proc_ProcBaseCtrl
   task cs
   (
     input logic       cs_inst_val,
-    input logic [2:0] cs_br_type,
+    input logic [3:0] cs_br_type,
     input logic [2:0] cs_imm_type,
     input logic       cs_rs1_en,
     input logic       cs_op1_sel,
@@ -428,6 +434,10 @@ module lab2_proc_ProcBaseCtrl
       `TINYRV2_INST_JALR    :cs( y, br_jalr,imm_i, y, bm1_rf, bm_imm, n, alu_jalr, n,   ex_res_pc4, nr, wm_x, y,  n,   n    );
 
       `TINYRV2_INST_BEQ     :cs( y, br_beq, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
+      `TINYRV2_INST_BLT     :cs( y, br_blt, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
+      `TINYRV2_INST_BLTU    :cs( y, br_bltu, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
+      `TINYRV2_INST_BGE     :cs( y, br_bge, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
+      `TINYRV2_INST_BGEU    :cs( y, br_bgeu, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
       
       default               :cs( n, br_x,   imm_x, n, bm1_x,  bm_x,   n, alu_x,    n,   ex_res_alu, nr, wm_x, n,  n,   n    );
 
@@ -571,7 +581,7 @@ module lab2_proc_ProcBaseCtrl
   logic [4:0]  rf_waddr_X;
   logic        proc2mngr_val_X;
   logic        stats_en_wen_X;
-  logic [2:0]  br_type_X;
+  logic [3:0]  br_type_X;
 
   // Pipeline registers
 
@@ -607,6 +617,22 @@ module lab2_proc_ProcBaseCtrl
     end
     else if ( val_X && ( br_type_X == br_beq ) ) begin
       pc_redirect_X = br_cond_eq_X;
+      pc_sel_X      = 2'b1; // use branch target
+    end
+    else if ( val_X && ( br_type_X == br_blt) ) begin
+      pc_redirect_X = br_cond_lt_X;
+      pc_sel_X      = 2'b1; // use branch target
+    end
+    else if ( val_X && ( br_type_X == br_bltu) ) begin
+      pc_redirect_X = br_cond_ltu_X;
+      pc_sel_X      = 2'b1; // use branch target
+    end
+    else if ( val_X && ( br_type_X == br_bge) ) begin
+      pc_redirect_X = !br_cond_lt_X;
+      pc_sel_X      = 2'b1; // use branch target
+    end
+    else if ( val_X && ( br_type_X == br_bgeu) ) begin
+      pc_redirect_X = !br_cond_ltu_X;
       pc_sel_X      = 2'b1; // use branch target
     end
     else begin

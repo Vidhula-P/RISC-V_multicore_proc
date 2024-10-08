@@ -219,6 +219,9 @@ module lab2_proc_ProcBase
 
   logic [31:0] inst_D;
   logic        br_cond_eq_X;
+  logic        br_cond_lt_X;
+  logic        br_cond_ltu_X;
+
 
   //----------------------------------------------------------------------
   // Control Unit

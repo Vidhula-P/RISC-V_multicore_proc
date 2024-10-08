@@ -76,6 +76,8 @@ module lab2_proc_ProcBaseDpath
 
   output logic [31:0]  inst_D,
   output logic         br_cond_eq_X,
+  output logic         br_cond_lt_X,
+  output logic         br_cond_ltu_X,
 
   // extra ports
 
@@ -323,8 +325,8 @@ module lab2_proc_ProcBaseDpath
     .fn       (alu_fn_X),
     .out      (alu_result_X),
     .ops_eq   (br_cond_eq_X),
-    .ops_lt   (),
-    .ops_ltu  ()
+    .ops_lt   (br_cond_lt_X),
+    .ops_ltu  (br_cond_ltu_X)
   );
 
   assign dmem_reqstream_msg_addr = alu_result_X;
