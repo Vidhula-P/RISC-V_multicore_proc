@@ -37,6 +37,7 @@ class Tests:
     asm_test( inst_lw.gen_srcs_dest_test ) ,
     asm_test( inst_lw.gen_addr_test      ) ,
     asm_test( inst_lw.gen_random_test    ) ,
+    asm_test( inst_lw.gen_load_use_bypass)
   ])
   def test_lw( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )

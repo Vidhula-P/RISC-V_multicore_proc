@@ -50,7 +50,44 @@ def gen_basic_test():
 # Define additional directed and random test cases.
 # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-def gen_dest_dep_test():
+def gen_alu_use_bypass_X():
+  # Bypass from X due to a RAW ALU-use hazard
+  return """
+
+    csrr x10, mngr2proc, < 5
+    csrr x11, mngr2proc, < 7
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    addi x2, x11, 0x01
+    addi x1, x2,  0x01
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    csrw proc2mngr, x1 > 9
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+  """
+
+def gen_alu_use_bypass_priority():
+  # This test has two RAW ALU-use hazards in X and M
+  # It should correctly bypass from X
   return """
 
     csrr x10, mngr2proc, < 5

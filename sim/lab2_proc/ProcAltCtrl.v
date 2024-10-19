@@ -494,15 +494,20 @@ module lab2_proc_ProcAltCtrl
   assign bypass_waddr_X_rs1_D 
     = val_D && rs1_en_D 
       && val_X && rf_wen_X 
-      && (inst_rs1_D == rf_waddr_X) && (rf_waddr_X!=0)
+      && (inst_rs1_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
       && (dmem_type_X != ld);
 
   // ostall if write address in M matches rs1 in D
 
   logic  ostall_waddr_M_rs1_D;
-  assign ostall_waddr_M_rs1_D
-    = rs1_en_D && val_M && rf_wen_M
-      && ( inst_rs1_D == rf_waddr_M ) && ( rf_waddr_M != 5'd0 );
+  assign ostall_waddr_M_rs1_D = 0;
+
+  //bypass from M to D
+  logic  bypass_waddr_M_rs1_D;
+  assign bypass_waddr_M_rs1_D 
+    = val_D && rs1_en_D 
+      && val_M && rf_wen_M 
+      && (inst_rs1_D == rf_waddr_M) && (rf_waddr_M != 5'd0);
 
   // ostall if write address in W matches rs1 in D
 
@@ -519,7 +524,7 @@ module lab2_proc_ProcAltCtrl
   assign ostall_load_use_X_rs2_D 
     = val_D && rs2_en_D 
       && val_X && rf_wen_X 
-      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X!=0)
+      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
       && (dmem_type_X == ld);
 
  // bypass from X to D
@@ -528,15 +533,20 @@ module lab2_proc_ProcAltCtrl
   assign bypass_waddr_X_rs2_D 
     = val_D && rs2_en_D 
       && val_X && rf_wen_X 
-      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X!=0)
+      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
       && (dmem_type_X != ld);
 
   // ostall if write address in M matches rs2 in D
 
   logic  ostall_waddr_M_rs2_D;
-  assign ostall_waddr_M_rs2_D
-    = rs2_en_D && val_M && rf_wen_M
-      && ( inst_rs2_D == rf_waddr_M ) && ( rf_waddr_M != 5'd0 );
+  assign ostall_waddr_M_rs2_D = 0;
+
+  //bypass from M to D
+  logic  bypass_waddr_M_rs2_D;
+  assign bypass_waddr_M_rs2_D 
+    = val_D && rs1_en_D 
+      && val_M && rf_wen_M 
+      && (inst_rs2_D == rf_waddr_M) && (rf_waddr_M != 5'd0);
 
   // ostall if write address in W matches rs2 in D
 
@@ -588,9 +598,9 @@ module lab2_proc_ProcAltCtrl
     if ( bypass_waddr_X_rs1_D ) begin
       op1_bypass_sel_D = 2'd1;
     end
-    // else if ( bypass_waddr_M_rs1_D ) begin
-    //   op1_bypass_sel_D = 2'd2;
-    // end
+    else if ( bypass_waddr_M_rs1_D ) begin
+      op1_bypass_sel_D = 2'd2;
+    end
     // else if ( bypass_waddr_W_rs1_D ) begin
     //   op1_bypass_sel_D = 2'd3;
     // end
@@ -604,9 +614,9 @@ module lab2_proc_ProcAltCtrl
     if ( bypass_waddr_X_rs2_D ) begin
       op2_bypass_sel_D = 2'd1;
     end
-    // else if ( bypass_waddr_M_rs2_D ) begin
-    //   op2_bypass_sel_D = 2'd2;
-    // end
+    else if ( bypass_waddr_M_rs2_D ) begin
+      op2_bypass_sel_D = 2'd2;
+    end
     // else if ( bypass_waddr_W_rs2_D ) begin
     //   op2_bypass_sel_D = 2'd3;
     // end
