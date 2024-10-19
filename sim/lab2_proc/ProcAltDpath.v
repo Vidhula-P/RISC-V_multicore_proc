@@ -427,6 +427,8 @@ module lab2_proc_ProcAltDpath
 
   assign rf_wdata_W = wb_result_W;
 
+  assign bypass_from_W = rf_wdata_W;
+
   // stats output
   // note the stats en is full 32-bit here but the outside port is one
   // bit.

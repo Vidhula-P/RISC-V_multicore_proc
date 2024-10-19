@@ -512,9 +512,15 @@ module lab2_proc_ProcAltCtrl
   // ostall if write address in W matches rs1 in D
 
   logic  ostall_waddr_W_rs1_D;
-  assign ostall_waddr_W_rs1_D
-    = rs1_en_D && val_W && rf_wen_W
-      && ( inst_rs1_D == rf_waddr_W ) && ( rf_waddr_W != 5'd0 );
+  assign ostall_waddr_W_rs1_D = 0;
+  
+  // bypass from W to D
+
+  logic  bypass_waddr_W_rs1_D;
+  assign bypass_waddr_W_rs1_D 
+    = val_D && rs1_en_D 
+      && val_W && rf_wen_W 
+      && (inst_rs1_D == rf_waddr_W) && (rf_waddr_W != 5'd0);
 
   // Only stall for load-use
 
@@ -551,9 +557,15 @@ module lab2_proc_ProcAltCtrl
   // ostall if write address in W matches rs2 in D
 
   logic  ostall_waddr_W_rs2_D;
-  assign ostall_waddr_W_rs2_D
-    = rs2_en_D && val_W && rf_wen_W
-      && ( inst_rs2_D == rf_waddr_W ) && ( rf_waddr_W != 5'd0 );
+  assign ostall_waddr_W_rs2_D = 0;
+  
+  // bypass from W to D
+
+  logic  bypass_waddr_W_rs2_D;
+  assign bypass_waddr_W_rs2_D 
+    = val_D && rs2_en_D 
+      && val_W && rf_wen_W 
+      && (inst_rs2_D == rf_waddr_W) && (rf_waddr_W != 5'd0);
 
   // Put together ostall signal due to hazards
 
@@ -601,9 +613,9 @@ module lab2_proc_ProcAltCtrl
     else if ( bypass_waddr_M_rs1_D ) begin
       op1_bypass_sel_D = 2'd2;
     end
-    // else if ( bypass_waddr_W_rs1_D ) begin
-    //   op1_bypass_sel_D = 2'd3;
-    // end
+    else if ( bypass_waddr_W_rs1_D ) begin
+      op1_bypass_sel_D = 2'd3;
+    end
     else begin
       op1_bypass_sel_D = 2'd0;
     end
@@ -617,9 +629,9 @@ module lab2_proc_ProcAltCtrl
     else if ( bypass_waddr_M_rs2_D ) begin
       op2_bypass_sel_D = 2'd2;
     end
-    // else if ( bypass_waddr_W_rs2_D ) begin
-    //   op2_bypass_sel_D = 2'd3;
-    // end
+    else if ( bypass_waddr_W_rs2_D ) begin
+      op2_bypass_sel_D = 2'd3;
+    end
     else begin
       op2_bypass_sel_D = 2'd0;
     end

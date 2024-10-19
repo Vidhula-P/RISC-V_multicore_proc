@@ -43,7 +43,9 @@ class Tests:
     asm_test( inst_addi.gen_basic_test      ) ,
     asm_test( inst_addi.gen_alu_use_bypass_X) ,
     asm_test( inst_addi.gen_alu_use_bypass_priority) ,
-    
+    asm_test( inst_addi.gen_alu_use_bypass_M) ,
+    asm_test( inst_addi.gen_alu_use_bypass_W) ,
+    asm_test( inst_addi.gen_alu_load_use_double_bypass) ,    
 
     # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Add more rows to the test case table to test more complicated

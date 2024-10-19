@@ -185,9 +185,10 @@ def gen_random_test():
   asm_code.append( gen_word_data( data ) )
   return asm_code
 
-def gen_load_use_bypass():
-  # This test has two RAW ALU-use hazards in X and M
-  # It should correctly bypass from X
+def gen_load_use_bypass_M():
+  # This test has a Load-Use Hazard
+  # For base design, there should be 3 stalls
+  # It should stall for 1 cycle and correctly bypass from M for alt design
   return """
     csrr x1, mngr2proc < 0x00002000
     nop
@@ -199,6 +200,37 @@ def gen_load_use_bypass():
     nop
     nop
     lw   x2, 0(x1)
+    addi x3, x2, 0x01
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    csrw proc2mngr, x3 > 0x01020305
+
+    .data
+    .word 0x01020304
+  """
+
+def gen_load_use_bypass_M_nostall():
+  # This test has a Load-Use Hazard
+  # For base design, there should be 3 stalls
+  # It should stall for 0 cycle and correctly bypass from M for alt design
+  return """
+    csrr x1, mngr2proc < 0x00002000
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    lw   x2, 0(x1)
+    addi x6, x1, 0x02
     addi x3, x2, 0x01
     nop
     nop
