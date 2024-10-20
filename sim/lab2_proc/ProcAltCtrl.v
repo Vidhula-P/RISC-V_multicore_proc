@@ -442,7 +442,7 @@ module lab2_proc_ProcAltCtrl
       `TINYRV2_INST_BLTU    :cs( y, br_bltu, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
       `TINYRV2_INST_BGE     :cs( y, br_bge, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
       `TINYRV2_INST_BGEU    :cs( y, br_bgeu, imm_b, y, bm1_rf, bm_rf,  y, alu_x,    n,   ex_res_alu, nr, wm_a, n,  n,   n    );
-      
+
       default               :cs( n, br_x,   imm_x, n, bm1_x,  bm_x,   n, alu_x,    n,   ex_res_alu, nr, wm_x, n,  n,   n    );
 
     endcase
@@ -477,95 +477,6 @@ module lab2_proc_ProcAltCtrl
 
   logic  ostall_mngr2proc_D;
   assign ostall_mngr2proc_D = val_D && mngr2proc_rdy_D && !mngr2proc_val;
-
-  // Only stall for load-use
-
-  logic ostall_waddr_X_rs1_D; 
-  logic ostall_load_use_X_rs1_D;
-  assign ostall_waddr_X_rs1_D = 0;
-  assign ostall_load_use_X_rs1_D = val_D && rs1_en_D 
-      && val_X && rf_wen_X 
-      && (inst_rs1_D == rf_waddr_X) && (rf_waddr_X!=0)
-      && (dmem_type_X == ld);
-
- // bypass from X to D
-
-  logic  bypass_waddr_X_rs1_D;
-  assign bypass_waddr_X_rs1_D 
-    = val_D && rs1_en_D 
-      && val_X && rf_wen_X 
-      && (inst_rs1_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
-      && (dmem_type_X != ld);
-
-  // ostall if write address in M matches rs1 in D
-
-  logic  ostall_waddr_M_rs1_D;
-  assign ostall_waddr_M_rs1_D = 0;
-
-  //bypass from M to D
-  logic  bypass_waddr_M_rs1_D;
-  assign bypass_waddr_M_rs1_D 
-    = val_D && rs1_en_D 
-      && val_M && rf_wen_M 
-      && (inst_rs1_D == rf_waddr_M) && (rf_waddr_M != 5'd0);
-
-  // ostall if write address in W matches rs1 in D
-
-  logic  ostall_waddr_W_rs1_D;
-  assign ostall_waddr_W_rs1_D = 0;
-  
-  // bypass from W to D
-
-  logic  bypass_waddr_W_rs1_D;
-  assign bypass_waddr_W_rs1_D 
-    = val_D && rs1_en_D 
-      && val_W && rf_wen_W 
-      && (inst_rs1_D == rf_waddr_W) && (rf_waddr_W != 5'd0);
-
-  // Only stall for load-use
-
-  logic  ostall_waddr_X_rs2_D; 
-  logic ostall_load_use_X_rs2_D;
-  assign ostall_waddr_X_rs2_D = 0;
-  assign ostall_load_use_X_rs2_D 
-    = val_D && rs2_en_D 
-      && val_X && rf_wen_X 
-      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
-      && (dmem_type_X == ld);
-
- // bypass from X to D
-
-  logic  bypass_waddr_X_rs2_D;
-  assign bypass_waddr_X_rs2_D 
-    = val_D && rs2_en_D 
-      && val_X && rf_wen_X 
-      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
-      && (dmem_type_X != ld);
-
-  // ostall if write address in M matches rs2 in D
-
-  logic  ostall_waddr_M_rs2_D;
-  assign ostall_waddr_M_rs2_D = 0;
-
-  //bypass from M to D
-  logic  bypass_waddr_M_rs2_D;
-  assign bypass_waddr_M_rs2_D 
-    = val_D && rs1_en_D 
-      && val_M && rf_wen_M 
-      && (inst_rs2_D == rf_waddr_M) && (rf_waddr_M != 5'd0);
-
-  // ostall if write address in W matches rs2 in D
-
-  logic  ostall_waddr_W_rs2_D;
-  assign ostall_waddr_W_rs2_D = 0;
-  
-  // bypass from W to D
-
-  logic  bypass_waddr_W_rs2_D;
-  assign bypass_waddr_W_rs2_D 
-    = val_D && rs2_en_D 
-      && val_W && rf_wen_W 
-      && (inst_rs2_D == rf_waddr_W) && (rf_waddr_W != 5'd0);
 
   // Put together ostall signal due to hazards
 
@@ -729,6 +640,42 @@ module lab2_proc_ProcAltCtrl
   assign ostall_X = val_X && ( dmem_type_X != nr ) && !dmem_reqstream_rdy;
   assign ostall_X_mul = mul_used_X && !imul_resp_val_X;
 
+  // Avoid stalling in X stage for ALU-use
+
+  logic ostall_waddr_X_rs1_D;
+  assign ostall_waddr_X_rs1_D = 0;
+  logic  ostall_waddr_X_rs2_D;
+  assign ostall_waddr_X_rs2_D = 0;
+
+  // Only stall in X stage for load-use
+
+  logic ostall_load_use_X_rs1_D;
+  assign ostall_load_use_X_rs1_D = val_D && rs1_en_D
+      && val_X && rf_wen_X
+      && (inst_rs1_D == rf_waddr_X) && (rf_waddr_X!=0)
+      && (dmem_type_X == ld);
+  logic ostall_load_use_X_rs2_D;
+  assign ostall_load_use_X_rs2_D
+    = val_D && rs2_en_D
+      && val_X && rf_wen_X
+      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
+      && (dmem_type_X == ld);
+
+ // bypass from X to D
+
+  logic  bypass_waddr_X_rs1_D;
+  assign bypass_waddr_X_rs1_D
+    = val_D && rs1_en_D
+      && val_X && rf_wen_X
+      && (inst_rs1_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
+      && (dmem_type_X != ld);
+  logic  bypass_waddr_X_rs2_D;
+  assign bypass_waddr_X_rs2_D
+    = val_D && rs2_en_D
+      && val_X && rf_wen_X
+      && (inst_rs2_D == rf_waddr_X) && (rf_waddr_X != 5'd0)
+      && (dmem_type_X != ld);
+
   // osquash due to taken branch, notice we can't osquash if current
   // stage stalls, otherwise we will send osquash twice.
 
@@ -787,6 +734,27 @@ module lab2_proc_ProcAltCtrl
 
   assign stall_M = val_M && ( ostall_M || ostall_W );
 
+
+  // ostall if write address in M matches rs in D
+
+  logic  ostall_waddr_M_rs1_D;
+  assign ostall_waddr_M_rs1_D = 0;
+  logic  ostall_waddr_M_rs2_D;
+  assign ostall_waddr_M_rs2_D = 0;
+
+  //bypass from M to D
+
+  logic  bypass_waddr_M_rs1_D;
+  assign bypass_waddr_M_rs1_D
+    = val_D && rs1_en_D
+      && val_M && rf_wen_M
+      && (inst_rs1_D == rf_waddr_M) && (rf_waddr_M != 5'd0);
+  logic  bypass_waddr_M_rs2_D;
+  assign bypass_waddr_M_rs2_D
+    = val_D && rs1_en_D
+      && val_M && rf_wen_M
+      && (inst_rs2_D == rf_waddr_M) && (rf_waddr_M != 5'd0);
+
   // Set dmem_respstream_rdy if valid and not stalling and this is a lw/sw
 
   assign dmem_respstream_rdy = val_M && !stall_M && ( dmem_type_M != nr );
@@ -833,6 +801,27 @@ module lab2_proc_ProcAltCtrl
   // ostall due to proc2mngr
 
   assign ostall_W = val_W && proc2mngr_val_W && !proc2mngr_rdy;
+
+  // ostall if write address in W matches rs in D
+
+  logic  ostall_waddr_W_rs1_D;
+  assign ostall_waddr_W_rs1_D = 0;
+  logic  ostall_waddr_W_rs2_D;
+  assign ostall_waddr_W_rs2_D = 0;
+
+  // bypass from W to D
+
+  logic  bypass_waddr_W_rs1_D;
+  assign bypass_waddr_W_rs1_D
+    = val_D && rs1_en_D
+      && val_W && rf_wen_W
+      && (inst_rs1_D == rf_waddr_W) && (rf_waddr_W != 5'd0);
+
+  logic  bypass_waddr_W_rs2_D;
+  assign bypass_waddr_W_rs2_D
+    = val_D && rs2_en_D
+      && val_W && rf_wen_W
+      && (inst_rs2_D == rf_waddr_W) && (rf_waddr_W != 5'd0);
 
   // stall and squash signal used in W stage
 

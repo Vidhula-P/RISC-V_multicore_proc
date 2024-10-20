@@ -149,7 +149,7 @@ module lab2_proc_ProcAltDpath
   logic [31:0] bypass_from_W;
   logic [31:0] op1_bypass_data_D;
   logic [31:0] op2_bypass_data_D;
-  
+
 
   vc_EnResetReg#(32) pc_reg_D
   (
@@ -233,9 +233,6 @@ module lab2_proc_ProcAltDpath
    .sel  (op1_bypass_sel_D),
    .out  (op1_bypass_data_D)
   );
-
-
-
 
   vc_Mux2#(32) op1_sel_mux_D
   (
