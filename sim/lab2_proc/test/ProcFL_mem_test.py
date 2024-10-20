@@ -52,7 +52,10 @@ class Tests:
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_sw.gen_basic_test     ),
+    # asm_test( inst_sw.gen_basic_test     ),
+    # asm_test(inst_sw.gen_long_test       ),
+    # asm_test(inst_sw.gen_long_test_from_eval),
+    asm_test(inst_sw.gen_long_complex_check)
 
     # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Add more rows to the test case table to test more complicated
