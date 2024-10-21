@@ -64,26 +64,19 @@ class ubmark_vvadd_unopt:
            csrr  x4, mngr2proc < 0x4000
            add   x5, x0, x1
 
-           csrr  x9, mngr2proc < 4
-           csrr  x10, mngr2proc < 5
-           csrr  x11, mngr2proc < 6
-
          loop:
-           sw   x9, 0(x2)
-           sw   x10,0(x3)
-
-           lw    x6, 0(x2) //x6 = 4
-           lw    x7, 0(x3) // x7 = 5
-           add   x8, x6, x7 // x8 = 9
-           sw    x8, 0(x4) //'9' stored in 'x4+0'
+           lw    x6, 0(x2)
+           lw    x7, 0(x3)
+           add   x8, x6, x7
+           sw    x8, 0(x4)
            addi  x2, x2, 4
            addi  x3, x3, 4
            addi  x4, x4, 4
            addi  x5, x5, -1
-          #  bne   x5, x0, loop
+           bne   x5, x0, loop
 
            # end of the program
-           csrw  proc2mngr, x8 > 9
+           csrw  proc2mngr, x0 > 0
            nop
            nop
            nop
@@ -105,4 +98,3 @@ class ubmark_vvadd_unopt:
     mem_image.add_section( src1_section )
 
     return mem_image
-
