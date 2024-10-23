@@ -91,7 +91,7 @@ class Tests:
     asm_test( inst_bge.gen_srcs_dep_nottaken_test ),
     asm_test( inst_bge.gen_src0_eq_src1_test      ),
     asm_test( inst_bge.gen_value_test             ),
-    # asm_test( inst_bge.gen_random_test            ), #doesn't work
+    asm_test( inst_bge.gen_random_test            ), 
     asm_test( inst_bge.gen_back_to_back_test      ),
   ])
   def test_bge( s, name, test ):
@@ -141,7 +141,7 @@ class Tests:
     asm_test( inst_blt.gen_srcs_dep_nottaken_test ),
     asm_test( inst_blt.gen_src0_eq_src1_test      ),
     asm_test( inst_blt.gen_value_test             ),
-    # asm_test( inst_blt.gen_random_test            ),
+    asm_test( inst_blt.gen_random_test            ),
     asm_test( inst_blt.gen_back_to_back_test      ),
   ])
   def test_blt( s, name, test ):

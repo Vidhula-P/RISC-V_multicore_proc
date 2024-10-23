@@ -188,21 +188,20 @@ def gen_value_test():
 # gen_random_test
 #-------------------------------------------------------------------------
 
-# def gen_random_test():
-#   asm_code = []
-#   for i in range(25):
-#     taken = random.choice([True, False])
-#     src0  = b32( random.randint(0,0xfffffffe) )
-#     if taken:
-#       # Branch taken, src0 < src1
-#       src1 = b32( random.randint( src0, 0xffffffff) )
-#       if (src0 == src1):
-#         src1 = src0 + 1
-#     else:
-#       # Branch not taken, src0 >= src1
-#       src1 = b32( random.randint(0, src0) )
-#     asm_code.append( gen_br2_value_test( "blt", src0.uint(), src1.uint(), taken ) )
-#   return asm_code
+def gen_random_test():
+  asm_code = []
+  for i in range(25):
+    taken = random.choice([True, False])
+    src0  = b32( random.randint(-2147483648, 2147483645)) 
+
+    if taken:
+      # Branch taken, src0 < src1
+      src1 = b32( random.randint( src0.int(), 2147483646) )    
+    else:
+      # Branch not taken, src0 >= src1
+      src1 = b32( random.randint(-2147483648, src0.int()) )
+    asm_code.append( gen_br2_value_test( "blt", src0.int(), src1.int(), taken ) )
+  return asm_code
 
 #-------------------------------------------------------------------------
 # gen_back_to_back_test
