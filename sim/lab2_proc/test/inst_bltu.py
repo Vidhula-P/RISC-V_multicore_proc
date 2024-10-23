@@ -185,7 +185,7 @@ def gen_random_test():
   asm_code = []
   for i in range(25):
     taken = random.choice([True, False])
-    src0  = b32( random.randint(0,0xffffffff) )
+    src0  = b32( random.randint(0,0xfffffffe) )
     if taken:
       # Branch taken, src0 < src1
       src1 = b32( random.randint( src0, 0xffffffff) )

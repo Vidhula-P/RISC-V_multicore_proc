@@ -46,11 +46,6 @@ class Tests:
     asm_test( inst_beq.gen_value_test             ) ,
     asm_test( inst_beq.gen_random_test            ) ,
     asm_test( inst_beq.gen_back_to_back_test      ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_beq( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
@@ -88,11 +83,16 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_bge.gen_basic_test             ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_bge.gen_src0_dep_taken_test    ),
+    asm_test( inst_bge.gen_src0_dep_nottaken_test ),
+    asm_test( inst_bge.gen_src1_dep_taken_test    ),
+    asm_test( inst_bge.gen_src1_dep_nottaken_test ),
+    asm_test( inst_bge.gen_srcs_dep_taken_test    ),
+    asm_test( inst_bge.gen_srcs_dep_nottaken_test ),
+    asm_test( inst_bge.gen_src0_eq_src1_test      ),
+    asm_test( inst_bge.gen_value_test             ),
+    # asm_test( inst_bge.gen_random_test            ), #doesn't work
+    asm_test( inst_bge.gen_back_to_back_test      ),
   ])
   def test_bge( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
@@ -107,12 +107,19 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_bgeu.gen_basic_test             ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_bgeu.gen_basic_test             ),
+    asm_test( inst_bgeu.gen_src0_dep_taken_test    ),
+    asm_test( inst_bgeu.gen_src0_dep_nottaken_test ),
+    asm_test( inst_bgeu.gen_src1_dep_taken_test    ),
+    asm_test( inst_bgeu.gen_src1_dep_nottaken_test ),
+    asm_test( inst_bgeu.gen_srcs_dep_taken_test    ),
+    asm_test( inst_bgeu.gen_srcs_dep_nottaken_test ),
+    asm_test( inst_bgeu.gen_src0_eq_src1_test      ),
+    asm_test( inst_bgeu.gen_value_test             ),
+    asm_test( inst_bgeu.gen_random_test            ), #doesn't work
+    asm_test( inst_bgeu.gen_back_to_back_test      ),
   ])
+  
   def test_bgeu( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
@@ -134,13 +141,8 @@ class Tests:
     asm_test( inst_blt.gen_srcs_dep_nottaken_test ),
     asm_test( inst_blt.gen_src0_eq_src1_test      ),
     asm_test( inst_blt.gen_value_test             ),
-    # asm_test( inst_blt.gen_random_test            ), #doesn't work
+    # asm_test( inst_blt.gen_random_test            ),
     asm_test( inst_blt.gen_back_to_back_test      ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_blt( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
@@ -163,13 +165,8 @@ class Tests:
     asm_test( inst_bltu.gen_srcs_dep_nottaken_test ),
     asm_test( inst_bltu.gen_src0_eq_src1_test      ),
     asm_test( inst_bltu.gen_value_test             ),
-    # asm_test( inst_bltu.gen_random_test            ), #doesn't work
+    asm_test( inst_bltu.gen_random_test            ),
     asm_test( inst_bltu.gen_back_to_back_test      ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_bltu( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
