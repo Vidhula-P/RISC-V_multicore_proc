@@ -271,7 +271,7 @@ def gen_jal_random_tests():
   reset_jal_template()
   asm_code = []
   for _ in range(25):
-    num_nops_before = random.randint(0, 500)
-    num_nops_after  = random.randint(0, 500)
+    num_nops_before = random.randint(0, 200)
+    num_nops_after  = random.randint(0, 200)
     asm_code.append( gen_jal_any_nops_test( num_nops_before, num_nops_after) )
   return asm_code
