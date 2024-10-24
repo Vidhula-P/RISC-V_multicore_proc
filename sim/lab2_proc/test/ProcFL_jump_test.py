@@ -46,9 +46,9 @@ class Tests:
   def test_jal( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_jal_delays( s ):
+    run_test( s.ProcType, inst_jal.gen_jal_nested_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # jalr
@@ -67,7 +67,7 @@ class Tests:
   def test_jalr( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_jalr_delays( s ):
+    run_test( s.ProcType, inst_jalr.gen_jalr_nested_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
