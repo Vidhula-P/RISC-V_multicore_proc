@@ -62,11 +62,13 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_sub.gen_basic_test     ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_sub.gen_dest_dep_test  ),
+    asm_test( inst_sub.gen_src0_dep_test  ),
+    asm_test( inst_sub.gen_src1_dep_test  ),
+    asm_test( inst_sub.gen_srcs_dep_test  ),
+    asm_test( inst_sub.gen_srcs_dest_test ),    
+    asm_test( inst_sub.gen_value_test     ),
+    asm_test( inst_sub.gen_random_test    ),
   ])
   def test_sub( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
@@ -160,7 +162,14 @@ class Tests:
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_slt.gen_basic_test     ),
+    asm_test( inst_slt.gen_basic_test     ),    
+    asm_test( inst_slt.gen_dest_dep_test  ),
+    asm_test( inst_slt.gen_src0_dep_test  ),
+    asm_test( inst_slt.gen_src1_dep_test  ),
+    asm_test( inst_slt.gen_srcs_dep_test  ),
+    asm_test( inst_slt.gen_srcs_dest_test ),
+    asm_test( inst_slt.gen_value_test     ),
+    asm_test( inst_slt.gen_random_test    ),
 
     # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Add more rows to the test case table to test more complicated
@@ -179,10 +188,13 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_sltu.gen_basic_test     ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
+    asm_test( inst_sltu.gen_dest_dep_test  ),
+    asm_test( inst_sltu.gen_src0_dep_test  ),
+    asm_test( inst_sltu.gen_src1_dep_test  ),
+    asm_test( inst_sltu.gen_srcs_dep_test  ),
+    asm_test( inst_sltu.gen_srcs_dest_test ),
+    asm_test( inst_sltu.gen_value_test     ),
+    asm_test( inst_sltu.gen_random_test    ),
     # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_sltu( s, name, test ):
@@ -196,7 +208,14 @@ class Tests:
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_sra.gen_basic_test     ),
+    asm_test( inst_sra.gen_basic_test     ),    
+    # asm_test( inst_sra.gen_dest_dep_test  ),
+    # asm_test( inst_sra.gen_src0_dep_test  ),
+    # asm_test( inst_sra.gen_src1_dep_test  ),
+    # asm_test( inst_sra.gen_srcs_dep_test  ),
+    # asm_test( inst_sra.gen_srcs_dest_test ),
+    # asm_test( inst_sra.gen_value_test     ),
+    # asm_test( inst_sra.gen_random_test    ),
 
     # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
     # Add more rows to the test case table to test more complicated
@@ -215,10 +234,13 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_srl.gen_basic_test     ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
+    asm_test( inst_srl.gen_dest_dep_test  ),
+    asm_test( inst_srl.gen_src0_dep_test  ),
+    asm_test( inst_srl.gen_src1_dep_test  ),
+    asm_test( inst_srl.gen_srcs_dep_test  ),
+    asm_test( inst_srl.gen_srcs_dest_test ),
+    asm_test( inst_srl.gen_value_test     ),
+    asm_test( inst_srl.gen_random_test    ),
     # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_srl( s, name, test ):
@@ -233,10 +255,13 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_sll.gen_basic_test     ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
+    asm_test( inst_sll.gen_dest_dep_test  ),
+    asm_test( inst_sll.gen_src0_dep_test  ),
+    asm_test( inst_sll.gen_src1_dep_test  ),
+    asm_test( inst_sll.gen_srcs_dep_test  ),
+    asm_test( inst_sll.gen_srcs_dest_test ),
+    asm_test( inst_sll.gen_value_test     ),
+    asm_test( inst_sll.gen_random_test    ),
     # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_sll( s, name, test ):
