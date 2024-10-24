@@ -73,9 +73,10 @@ class Tests:
   def test_sub( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_sub_delays( s ):
+    run_test( s.ProcType, inst_sub.gen_random_test, delays=True,
+              cmdline_opts=s.__class__.cmdline_opts )
+    
   #-----------------------------------------------------------------------
   # mul
   #-----------------------------------------------------------------------
@@ -170,18 +171,14 @@ class Tests:
     asm_test( inst_slt.gen_srcs_dest_test ),
     asm_test( inst_slt.gen_value_test     ),
     asm_test( inst_slt.gen_random_test    ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_slt( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_slt_delays( s ):
+    run_test( s.ProcType, inst_slt.gen_random_test, delays=True,
+              cmdline_opts=s.__class__.cmdline_opts )
+    
   #-----------------------------------------------------------------------
   # sltu
   #-----------------------------------------------------------------------
@@ -199,10 +196,10 @@ class Tests:
   ])
   def test_sltu( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
-
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  
+  def test_sltu_delays( s ):
+    run_test( s.ProcType, inst_sltu.gen_random_test, delays=True,
+              cmdline_opts=s.__class__.cmdline_opts )
   #-----------------------------------------------------------------------
   # sra
   #-----------------------------------------------------------------------
@@ -246,9 +243,10 @@ class Tests:
   def test_srl( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_srl_delays( s ):
+    run_test( s.ProcType, inst_srl.gen_random_test, delays=True,
+              cmdline_opts=s.__class__.cmdline_opts )
+    
   #-----------------------------------------------------------------------
   # sll
   #-----------------------------------------------------------------------
@@ -267,6 +265,6 @@ class Tests:
   def test_sll( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_sll_delays( s ):
+    run_test( s.ProcType, inst_sll.gen_random_test, delays=True,
+              cmdline_opts=s.__class__.cmdline_opts )

@@ -50,9 +50,9 @@ class Tests:
   def test_beq( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_beq_delays( s ):
+    run_test( s.ProcType, inst_beq.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # bne
@@ -74,9 +74,10 @@ class Tests:
   def test_bne( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_bne_delays( s ):
+    run_test( s.ProcType, inst_bne.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
+    
   #-----------------------------------------------------------------------
   # bge
   #-----------------------------------------------------------------------
@@ -97,9 +98,9 @@ class Tests:
   def test_bge( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_bge_delays( s ):
+    run_test( s.ProcType, inst_bge.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # bgeu
@@ -116,16 +117,16 @@ class Tests:
     asm_test( inst_bgeu.gen_srcs_dep_nottaken_test ),
     asm_test( inst_bgeu.gen_src0_eq_src1_test      ),
     asm_test( inst_bgeu.gen_value_test             ),
-    asm_test( inst_bgeu.gen_random_test            ), #doesn't work
+    asm_test( inst_bgeu.gen_random_test            ),
     asm_test( inst_bgeu.gen_back_to_back_test      ),
   ])
   
   def test_bgeu( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_bgeu_delays( s ):
+    run_test( s.ProcType, inst_bgeu.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # blt
@@ -147,9 +148,9 @@ class Tests:
   def test_blt( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_blt_delays( s ):
+    run_test( s.ProcType, inst_blt.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # bltu
@@ -171,7 +172,6 @@ class Tests:
   def test_bltu( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+  def test_bltu_delays( s ):
+    run_test( s.ProcType, inst_bltu.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
