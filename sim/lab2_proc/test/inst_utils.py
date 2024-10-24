@@ -573,3 +573,91 @@ def gen_ld_value_test( inst, offset, base, result ):
   return gen_ld_template( 0, 0, "x1", inst, offset, base, result )
 
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+#-------------------------------------------------------------------------
+# gen_jal_template
+#-------------------------------------------------------------------------
+# Template for jal instructions.
+# We currently need the id to create labels unique to this test. We might
+# eventually allow local labels (e.g., 1f, 1b) as in gas.
+
+gen_jal_template_id = 0
+gen_jal_template_addr_offset = 0x0
+
+def gen_jal_template(
+  num_nops_before, num_nops_after
+):
+  # Create unique labels
+  global gen_jal_template_id
+  id_a = "label_{}".format( gen_jal_template_id + 1 )
+  gen_jal_template_id += 1
+
+  global gen_jal_template_addr_offset
+
+  curr_test_extra_offset = 4*(num_nops_before + num_nops_after + 6)
+  gen_jal_template_addr_offset += curr_test_extra_offset
+
+  def get_curr_test_link_addr():
+    curr_test_offset = gen_jal_template_addr_offset - curr_test_extra_offset
+    return str(hex(int(0x0208) + 4*(num_nops_before) + curr_test_offset))
+
+  return """
+    # Use r3 to track the control flow pattern
+    addi  x3, x0, 0     # 0x0200
+                        #
+    {nops_before}
+                        #
+    jal   x1, {id_a}   # 0x0204
+    addi  x3, x3, 0b01  # 0x0208
+
+    {nops_after}
+
+  {id_a}:
+    addi  x3, x3, 0b10
+
+    # Check the link address
+    csrw  proc2mngr, x1 > {link_address}
+
+    # Only the second bit should be set if jump was taken
+    csrw  proc2mngr, x3 > 0b10
+
+  """.format(
+    nops_before = gen_nops(num_nops_before),
+    nops_after  = gen_nops(num_nops_after),
+    link_address = get_curr_test_link_addr(),
+    **locals()
+  )
+
+#-------------------------------------------------------------------------
+# gen_jal_dep_test
+#-------------------------------------------------------------------------
+# Test the bypass paths by varying how many nops are inserted
+# between writing the x3 register and reading this register in the instr
+# after the jal.
+# To ensure that the use of jal does not affect the bypass paths in different stages
+# between other instructions with dependencies
+
+def gen_jal_dep_test( num_nops_before ):
+  return gen_jal_template( num_nops_before, 0 )
+
+#-------------------------------------------------------------------------
+# gen_jal_large_offset_test
+#-------------------------------------------------------------------------
+# Vary how many nops are between the jal instruction and the jal target
+# This tests the jal with large imm offsets.
+
+def gen_jal_large_offset_test( num_nops_after ):
+  return gen_jal_template( 0, num_nops_after )
+
+#-------------------------------------------------------------------------
+# gen_jal_any_nops_test
+#-------------------------------------------------------------------------
+# Vary how many nops are between the jal instruction and the jal target
+# This tests the jal with large imm offsets.
+
+def gen_jal_any_nops_test( num_nops_before, num_nops_after ):
+  return gen_jal_template( num_nops_before, num_nops_after )
+
+def reset_jal_template():
+  global gen_jal_template_addr_offset
+  gen_jal_template_addr_offset = 0x0

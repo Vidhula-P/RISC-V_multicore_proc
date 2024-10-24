@@ -31,12 +31,16 @@ class Tests:
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_jal.gen_basic_test        ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_jal.gen_basic_test                     ) ,
+    asm_test( inst_jal.gen_jal_nested_test                ) ,
+    asm_test( inst_jal.gen_jal_imm_test                   ) ,
+    asm_test( inst_jal.gen_jal_no_return_test             ) ,
+    asm_test( inst_jal.gen_jal_with_branch_taken_test     ) ,
+    asm_test( inst_jal.gen_jal_with_branch_not_taken_test ) ,
+    asm_test( inst_jal.gen_jal_function_call_test         ) ,
+    asm_test( inst_jal.gen_jal_dep_tests                  ) ,
+    asm_test( inst_jal.gen_jal_large_offset_tests         ) ,
+    asm_test( inst_jal.gen_jal_random_tests               ) ,
   ])
 
   def test_jal( s, name, test ):
@@ -52,11 +56,12 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_jalr.gen_basic_test    ),
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_jalr.gen_jalr_imm_test ),
+    asm_test( inst_jalr.gen_jalr_nested_test ),
+    asm_test( inst_jalr.gen_jalr_no_return_test ),
+    asm_test( inst_jalr.gen_jalr_with_branch_not_taken_test ),
+    asm_test( inst_jalr.gen_jalr_with_branch_taken_test ),
+    asm_test( inst_jalr.gen_jalr_function_call_test ),
   ])
 
   def test_jalr( s, name, test ):
