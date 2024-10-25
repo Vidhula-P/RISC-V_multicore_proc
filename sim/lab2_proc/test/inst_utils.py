@@ -575,6 +575,75 @@ def gen_ld_value_test( inst, offset, base, result ):
 # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 #-------------------------------------------------------------------------
+# gen_st_template
+#-------------------------------------------------------------------------
+# Template for store instructions 
+
+def gen_st_template(
+  num_nops_base, num_nops_src,
+  reg_base, reg_src,
+  inst, offset, base, src_val
+):
+  return """
+
+    # Move base value into register
+    csrr {reg_base}, mngr2proc < {base}
+    {nops_base}
+
+    # Move source value into register
+    csrr {reg_src}, mngr2proc < {src_val}
+    {nops_src}
+
+    # Instruction under test
+    {inst} {reg_src}, {offset}({reg_base})
+
+  """.format(
+    nops_base = gen_nops(num_nops_base),
+    nops_src = gen_nops(num_nops_src),
+    **locals()
+  )
+
+#-------------------------------------------------------------------------
+# gen_st_src_dep_test
+#-------------------------------------------------------------------------
+# Test the source bypass path by varying how many nops are
+# inserted between writing to the source register and using this
+# value in the instruction under test.
+
+def gen_st_src_dep_test( num_nops, inst, base, src_val ):
+  return gen_st_template( 8, num_nops, "x1", "x2", inst, 0, base, src_val )
+
+#-------------------------------------------------------------------------
+# gen_st_base_dep_test
+#-------------------------------------------------------------------------
+# Test the base register bypass paths by varying how many nops are
+# inserted between writing the base register and reading this register in
+# the instruction under test.
+
+def gen_st_base_dep_test( num_nops, inst, base, src_val ):
+  return gen_st_template( num_nops, 0, "x1", "x2", inst, 0, base, src_val )
+
+#-------------------------------------------------------------------------
+# gen_st_base_eq_src_test
+#-------------------------------------------------------------------------
+# Test situation where the base register specifier is the same as the
+# source register specifier.
+
+def gen_st_base_eq_src_test( inst, base, src_val ):
+  return gen_st_template( 0, 0, "x2", "x2", inst, 0, base, src_val )
+
+#-------------------------------------------------------------------------
+# gen_st_value_test
+#-------------------------------------------------------------------------
+# Test the actual operation of a store instruction under test.
+# We assume that bypassing has already been tested.
+
+def gen_st_value_test( inst, offset, base, src_val ):
+  return gen_st_template( 0, 0, "x1", "x2", inst, offset, base, src_val )
+
+# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+#-------------------------------------------------------------------------
 # gen_jal_template
 #-------------------------------------------------------------------------
 # Template for jal instructions.

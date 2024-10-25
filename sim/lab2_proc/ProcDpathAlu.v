@@ -36,7 +36,7 @@ module lab2_proc_ProcDpathAlu
       4'd5    : out = ops_lt;                                   // SLT               
       4'd6    : out = ops_ltu;                                  // SLTU
                 
-      4'd7    : out = in0 >>> in1[4:0];                         // SRA
+      4'd7    : out = $signed(in0) >>> in1[4:0];                         // SRA
       4'd8    : out = in0 >> in1[4:0];                          // SRL
       4'd9    : out = in0 << in1[4:0];                          // SLL
 

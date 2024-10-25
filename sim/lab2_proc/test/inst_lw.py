@@ -160,30 +160,35 @@ def gen_addr_test():
 
 def gen_random_test():
 
-  # Generate some random data
+  # Generate some random data to store
 
   data = []
   for i in range(128):
-    data.append( random.randint(0,0xffffffff) )
+    data.append(random.randint(0, 0xffffffff))
 
-  # Generate random accesses to this data
+  # Generate random store accesses
 
   asm_code = []
   for i in range(100):
 
-    a = random.randint(0,127)
-    b = random.randint(0,127)
+    a = random.randint(0, 63)   # Random index for data array
+    b = random.randint(0, 63)   # Random index for base address
 
-    base   = 0x2000 + (4*b)
-    offset = 4*(a - b)
-    result = data[a]
+    base   = 0x2000 + (4 * b)    # Base address with random offset
+    offset = 4 * (a - b)         # Offset to store at a calculated memory location
+    src_val = data[a]            # Random value to store
 
-    asm_code.append( gen_ld_value_test( "lw", offset, base, result ) )
+    # Generate the store instruction
+    asm_code.append(gen_st_value_test("sw", offset, base, src_val))
 
-  # Add the data to the end of the assembly code
+  # Add the data section (optional, for checking)
+  asm_code.append(gen_word_data(data))
 
-  asm_code.append( gen_word_data( data ) )
   return asm_code
+
+#-------------------------------------------------------------------------
+# gen_load_use_bypass_M
+#-------------------------------------------------------------------------
 
 def gen_load_use_bypass_M():
   # This test has a Load-Use Hazard
@@ -214,6 +219,10 @@ def gen_load_use_bypass_M():
     .data
     .word 0x01020304
   """
+
+#-------------------------------------------------------------------------
+# gen_load_use_bypass_M_nostall
+#-------------------------------------------------------------------------
 
 def gen_load_use_bypass_M_nostall():
   # This test has a Load-Use Hazard

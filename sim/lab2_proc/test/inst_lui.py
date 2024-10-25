@@ -44,7 +44,7 @@ def gen_dest_dep_test():
   return [
     gen_imm_dest_dep_test( 7, "lui",    1,  4096 ), 
     gen_imm_dest_dep_test( 5, "lui",   16,  65536 ),
-    gen_imm_dest_dep_test( 5, "lui",   26, 172032 ),
+    gen_imm_dest_dep_test( 7, "lui",   26, 106496 ),
   ]
 
 #-------------------------------------------------------------------------
