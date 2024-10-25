@@ -46,9 +46,79 @@ def gen_basic_test():
     nop
   """
 
-# ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Define additional directed and random test cases.
-# '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#-------------------------------------------------------------------------
+# gen_dest_dep_test
+#-------------------------------------------------------------------------
+
+def gen_dest_dep_test():
+  return [
+    gen_rimm_dest_dep_test( 5, "addi", 1, 1, 2 ),
+    gen_rimm_dest_dep_test( 4, "addi", 2, 1, 3 ),
+    gen_rimm_dest_dep_test( 3, "addi", 3, 1, 4 ),
+    gen_rimm_dest_dep_test( 2, "addi", 4, 1, 5 ),
+    gen_rimm_dest_dep_test( 1, "addi", 5, 1, 6 ),
+    gen_rimm_dest_dep_test( 0, "addi", 6, 1, 7 ),
+  ]
+
+#-------------------------------------------------------------------------
+# gen_src_dep_test
+#-------------------------------------------------------------------------
+
+def gen_src_dep_test():
+  return [
+    gen_rimm_src_dep_test( 5, "addi",  7, 1,  8 ),
+    gen_rimm_src_dep_test( 4, "addi",  8, 1,  9 ),
+    gen_rimm_src_dep_test( 3, "addi",  9, 1, 10 ),
+    gen_rimm_src_dep_test( 2, "addi", 1, 10, 11 ),
+    gen_rimm_src_dep_test( 1, "addi", 1, 11, 12 ),
+    gen_rimm_src_dep_test( 0, "addi", 1, 12, 13 ),
+  ]
+
+#-------------------------------------------------------------------------
+# gen_srcs_dest_test
+#-------------------------------------------------------------------------
+
+def gen_srcs_dest_test():
+  return [
+    gen_rimm_src_eq_dest_test( "addi", 25, 1, 26 ),
+    gen_rimm_src_eq_dest_test( "addi", 7832, 34, 7866 ),
+  ]
+
+#-------------------------------------------------------------------------
+# gen_value_test
+#-------------------------------------------------------------------------
+
+def gen_value_test():
+  return [
+
+    gen_rimm_value_test( "addi", 0x00000000, 0x00000000, 0x00000000 ),
+    gen_rimm_value_test( "addi", 0x00000001, 0x00000001, 0x00000002 ),
+    gen_rimm_value_test( "addi", 0x00000003, 0x00000007, 0x0000000a ),
+    gen_rimm_value_test( "addi", 0x80000000, 0x00000000, 0x80000000 ),
+    gen_rimm_value_test( "addi", 0xffffffff, 0x00000001, 0x00000000 ), #overflow
+    gen_rimm_value_test( "addi", 0x7fffffff, 0x00000000, 0x7fffffff ),
+
+    gen_rimm_value_test( "addi", 0x80000000, 0x000007FF, 0x800007ff ),
+    #gen_rimm_value_test( "addi", 0x80000000, 0x000027ff, 0x800007ff ), #immediate value expected to be 12-bit --> causes an assertion error
+    gen_rimm_value_test( "addi", 0x7fffffff, 0x000007FF, 0x800007fe ),
+  ]
+
+#-------------------------------------------------------------------------
+# gen_random_test
+#-------------------------------------------------------------------------
+
+def gen_random_test():
+  asm_code = []
+  for i in range(100):
+    src0 = b32( random.randint(0,0xffffffff) )
+    src1 = b32( random.randint(-2048, 2047 ) )
+    dest = b32(src0.int() + src1.int())
+    asm_code.append( gen_rimm_value_test( "addi", src0.int(), src1.int(), dest.int() ) )
+  return asm_code
+
+#-------------------------------------------------------------------------
+# gen_alu_use_bypass_X
+#-------------------------------------------------------------------------
 
 def gen_alu_use_bypass_X():
   # Bypass from X due to a RAW ALU-use hazard
@@ -86,6 +156,9 @@ def gen_alu_use_bypass_X():
     nop
     nop
   """
+#-------------------------------------------------------------------------
+# gen_alu_use_bypass_priority
+#-------------------------------------------------------------------------
 
 def gen_alu_use_bypass_priority():
   # This test has two RAW ALU-use hazards in X and M
@@ -125,6 +198,9 @@ def gen_alu_use_bypass_priority():
     nop
     nop
   """
+#-------------------------------------------------------------------------
+# gen_alu_load_use_double_bypass
+#-------------------------------------------------------------------------
 
 def gen_alu_load_use_double_bypass():
   # This test has two ALU use and one Load-Use hazards.
@@ -158,6 +234,9 @@ def gen_alu_load_use_double_bypass():
     .data
     .word 0x01020304
   """
+#-------------------------------------------------------------------------
+# gen_alu_use_bypass_M
+#-------------------------------------------------------------------------
 
 def gen_alu_use_bypass_M():
   # This builds upon the previous test case
@@ -198,6 +277,9 @@ def gen_alu_use_bypass_M():
     nop
     nop
   """
+#-------------------------------------------------------------------------
+# gen_alu_use_bypass_W
+#-------------------------------------------------------------------------
 
 def gen_alu_use_bypass_W():
   # This builds upon the previous test case

@@ -168,17 +168,27 @@ def gen_long_complex_check():
     nop
 """
 
-    # mem_image = assemble( text )
+#-------------------------------------------------------------------------
+# gen_random_test
+#-------------------------------------------------------------------------
 
-    # # load data by manually create data sections using binutils
+def gen_random_test():
 
-    # src0_section = mk_section( ".data", c_vvadd_src0_ptr, src0 )
+  # Generate random accesses to this data
 
-    # src1_section = mk_section( ".data", c_vvadd_src1_ptr, src1 )
+  asm_code = []
+  for i in range(100):
 
-    # # load data
+    a = random.randint(0,127)
+    b = random.randint(0,127)
 
-    # mem_image.add_section( src0_section )
-    # mem_image.add_section( src1_section )
+    base   = 0x2000 + (4*b)
+    offset = 4*(a - b)
+    result = data[a]
 
-    # return mem_image
+    asm_code.append( gen_sw_value_test( "lw", offset, base, result ) )
+
+  # Add the data to the end of the assembly code
+
+  asm_code.append( gen_word_data( data ) )
+  return asm_code

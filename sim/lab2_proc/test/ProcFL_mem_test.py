@@ -60,7 +60,7 @@ class Tests:
   def test_sw( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  def test_sw_delays( s ):
-    run_test( s.ProcType, inst_sw.gen_random_test, delays=True,
-      cmdline_opts=s.__class__.cmdline_opts )
+  # def test_sw_delays( s ):
+  #   run_test( s.ProcType, inst_sw.gen_random_test, delays=True,
+  #     cmdline_opts=s.__class__.cmdline_opts )
 

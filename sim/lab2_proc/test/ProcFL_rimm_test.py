@@ -40,7 +40,12 @@ class Tests:
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_addi.gen_basic_test      ) ,
+    asm_test( inst_addi.gen_basic_test    ),    
+    asm_test( inst_addi.gen_dest_dep_test  ),
+    asm_test( inst_addi.gen_src_dep_test  ),
+    asm_test( inst_addi.gen_srcs_dest_test ),
+    asm_test( inst_addi.gen_value_test     ),
+    asm_test( inst_addi.gen_random_test    ),
     asm_test( inst_addi.gen_alu_use_bypass_X) ,
     asm_test( inst_addi.gen_alu_use_bypass_priority) ,
     asm_test( inst_addi.gen_alu_use_bypass_M) ,
@@ -114,83 +119,83 @@ class Tests:
 
   def test_xori_delays( s ):
     run_test( s.ProcType, inst_xori.gen_random_test, delays=True,
-              cmdline_opts=s.__class__.cmdline_opts )
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # slti
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_slti.gen_basic_test     ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_slti.gen_basic_test     ) ,    
+    asm_test( inst_slti.gen_dest_dep_test  ),
+    asm_test( inst_slti.gen_src_dep_test  ),
+    asm_test( inst_slti.gen_srcs_dest_test ),
+    asm_test( inst_slti.gen_value_test     ),
+    asm_test( inst_slti.gen_random_test    ),
   ])
   def test_slti( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_slti_delays( s ):
+    run_test( s.ProcType, inst_slti.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # sltiu
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_sltiu.gen_basic_test     ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_sltiu.gen_basic_test     ) ,   
+    asm_test( inst_sltiu.gen_dest_dep_test  ),
+    asm_test( inst_sltiu.gen_src_dep_test  ),
+    asm_test( inst_sltiu.gen_srcs_dest_test ),
+    asm_test( inst_sltiu.gen_value_test     ),
+    asm_test( inst_sltiu.gen_random_test    ),
   ])
   def test_sltiu( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_sltiu_delays( s ):
+    run_test( s.ProcType, inst_sltiu.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # srai
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_srai.gen_basic_test     ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_srai.gen_basic_test     ) ,  
+    asm_test( inst_srai.gen_dest_dep_test  ),
+    asm_test( inst_srai.gen_src_dep_test  ),
+    asm_test( inst_srai.gen_srcs_dest_test ),
+    asm_test( inst_srai.gen_value_test     ),
+    asm_test( inst_srai.gen_random_test    ),
   ])
   def test_srai( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_srai_delays( s ):
+    run_test( s.ProcType, inst_srai.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # srli
   #-----------------------------------------------------------------------
 
   @pytest.mark.parametrize( "name,test", [
-    asm_test( inst_srli.gen_basic_test     ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_srli.gen_basic_test     ) , 
+    asm_test( inst_srli.gen_dest_dep_test  ),
+    asm_test( inst_srli.gen_src_dep_test  ),
+    asm_test( inst_srli.gen_srcs_dest_test ),
+    asm_test( inst_srli.gen_value_test     ),
+    asm_test( inst_srli.gen_random_test    ),
   ])
   def test_srli( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_srli_delays( s ):
+    run_test( s.ProcType, inst_srli.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # slli
@@ -198,18 +203,18 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_slli.gen_basic_test     ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_slli.gen_dest_dep_test  ),
+    asm_test( inst_slli.gen_src_dep_test  ),
+    asm_test( inst_slli.gen_srcs_dest_test ),
+    asm_test( inst_slli.gen_value_test     ),
+    asm_test( inst_slli.gen_random_test    ),
   ])
   def test_slli( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
-
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  
+  def test_slli_delays( s ):
+    run_test( s.ProcType, inst_slli.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # lui
@@ -217,12 +222,8 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_lui.gen_basic_test    ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  ])
+    ])
+  
   def test_lui( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 

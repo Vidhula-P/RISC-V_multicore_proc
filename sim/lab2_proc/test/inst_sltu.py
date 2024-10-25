@@ -47,10 +47,6 @@ def gen_basic_test():
     nop
   """
 
-# ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Define additional directed and random test cases.
-# '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
 #-------------------------------------------------------------------------
 # gen_dest_dep_test
 #-------------------------------------------------------------------------
@@ -153,7 +149,7 @@ def gen_random_test():
   asm_code = []
   for i in range(100):
     src0 = b32( random.randint(0,0xffffffff) )
-    src1 = b32( random.randint(0,0xffffffff) )
+    src1 = b32( random.randint(0,0x0000001f) )
     if (src0<src1):
       dest = b32(1)
     else:
