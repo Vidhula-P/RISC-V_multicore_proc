@@ -51,18 +51,14 @@ class Tests:
     asm_test( inst_addi.gen_alu_use_bypass_M) ,
     asm_test( inst_addi.gen_alu_use_bypass_W) ,
     asm_test( inst_addi.gen_alu_load_use_double_bypass) ,    
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   ])
   def test_addi( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_addi_delays( s ):
+    run_test( s.ProcType, inst_addi.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
+
 
   #-----------------------------------------------------------------------
   # andi
@@ -222,14 +218,17 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_lui.gen_basic_test    ) ,
+    asm_test( inst_lui.gen_dest_dep_test ) ,
+    asm_test( inst_lui.gen_value_test    ) ,
+    asm_test( inst_lui.gen_random_test   ) ,
     ])
   
   def test_lui( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_lui_delays( s ):
+    run_test( s.ProcType, inst_lui.gen_random_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 
   #-----------------------------------------------------------------------
   # auipc
@@ -237,16 +236,12 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_auipc.gen_basic_test    ) ,
-
-    # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_auipc.delayed_auipc_test   ) ,
   ])
   def test_auipc( s, name, test ):
     run_test( s.ProcType, test, cmdline_opts=s.__class__.cmdline_opts )
 
-  # ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  def test_auipc_delays( s ):
+    run_test( s.ProcType, inst_auipc.delayed_auipc_test, delays=True,
+      cmdline_opts=s.__class__.cmdline_opts )
 

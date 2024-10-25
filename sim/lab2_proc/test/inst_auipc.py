@@ -36,6 +36,33 @@ def gen_basic_test():
     nop
   """
 
-# ''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Define additional directed and random test cases.
-# '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#-------------------------------------------------------------------------
+# nested_auipc_test
+#-------------------------------------------------------------------------
+
+def delayed_auipc_test():
+  return """
+    # PC=0x200
+    nop
+    nop
+    nop
+    nop
+    auipc x1, 0x00010                       # x1 = 0x00010210
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    csrw  proc2mngr, x1 > 0x00010210
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+  """
