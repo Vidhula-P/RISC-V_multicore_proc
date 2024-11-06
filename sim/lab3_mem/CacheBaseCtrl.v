@@ -40,18 +40,18 @@ module lab3_mem_CacheBaseCtrl
   output logic        data_array_wen,
   output logic        data_array_ren,
 
-  output logic           memresp_en,
-  output logic           write_data_mux_sel,
-  output logic           read_data_zero_mux_sel,
-  output logic           read_data_reg_en,
-  output logic           evict_addr_reg_en,
-  output logic           cacheresp_type,
-  output logic           hit,
-  output logic           memreq_type,
+  output logic        memresp_en,
+  output logic        write_data_mux_sel,
+  output logic        read_data_zero_mux_sel,
+  output logic        read_data_reg_en,
+  output logic        evict_addr_reg_en,
+  output logic [3:0]  cacheresp_type,
+  output logic        hit,
+  output logic [3:0]  memreq_type,
 
   // status signals (dpath->ctrl)
 
-  input  logic  [2:0] cachereq_type,
+  input  logic  [3:0] cachereq_type,
   input  logic [31:0] cachereq_addr,
   input  logic        tag_match
 );
@@ -79,10 +79,10 @@ module lab3_mem_CacheBaseCtrl
 
   always @( posedge clk ) begin
     if ( reset ) begin
-      state_reg <= STATE_IDLE;
+      current_state <= STATE_IDLE;
     end
     else begin
-      state_reg <= state_next;
+      current_state <= next_state;
     end
   end
 
@@ -94,67 +94,114 @@ module lab3_mem_CacheBaseCtrl
   logic is_write;
   logic is_init;
 
-  assign is_read  = cachereq_type == `VC_MEM_REQ_MSG_TYPE_READ;
-  assign is_write = cachereq_type == `VC_MEM_REQ_MSG_TYPE_WRITE;
-  assign is_init  = cachereq_type == `VC_MEM_REQ_MSG_TYPE_WRITE_INIT;
+  assign hit = is_valid && tag_match;
 
-  logic [4:0] state_reg;
-  logic [4:0] state_next;
+  assign is_read  = (cachereq_type == `VC_MEM_REQ_MSG_TYPE_READ);
+  assign is_write = (cachereq_type == `VC_MEM_REQ_MSG_TYPE_WRITE);
+  assign is_init  = (cachereq_type == `VC_MEM_REQ_MSG_TYPE_WRITE_INIT);
+
+  logic [4:0] current_state;
+  logic [4:0] next_state;
+
+  logic is_dirty;
+  logic is_valid;
 
   always @(*) begin
 
-    state_next = state_reg;
-    case ( state_reg )
+    case ( current_state )
 
-      STATE_IDLE: begin 
-      //Waits for a cache request and then transitions to STATE_TAG_CHECK if a request is valid.
-        if ( cachereq_val )
-          state_next = STATE_TAG_CHECK;
+      STATE_IDLE: begin
+        // Waits for a cache request and then transitions to STATE_TAG_CHECK if a request is valid.
+        if ( cachereq_val ) next_state = STATE_TAG_CHECK;
+        else                next_state = STATE_IDLE;
       end
-      STATE_TAG_CHECK:
-      //Checks if cache hit or miss
-      if(tag_match) //received from Datapath
-        state_next = STATE_INIT_DATA_ACCESS;
-      else
-        state_next = STATE_WAIT;
-      STATE_INIT_DATA_ACCESS:
-      STATE_READ_DATA_ACCESS:
-      STATE_WRITE_DATA_ACCESS:
-      STATE_REFILL_REQUEST:
-      STATE_REFILL_WAIT:
-      STATE_REFILL_UPDATE:
-      STATE_EVICT_PREPARE:
-      STATE_EVICT_REQUEST:
-      STATE_EVICT_WAIT:
-      STATE_WAIT:
-      //Waits for data to be available after fetching data from main memory for a cache miss
-      if(memresp_val)
-        state_next = STATE_INIT_DATA_ACCESS;
-    endcase
-  end
 
-endmodule
+      STATE_TAG_CHECK: begin
+        if ( is_init )                next_state = STATE_INIT_DATA_ACCESS;
+        else if ( is_read && hit )    next_state = STATE_READ_DATA_ACCESS;
+        else if ( is_write && hit )   next_state = STATE_WRITE_DATA_ACCESS;
+        else if ( !hit && is_dirty )  next_state = STATE_EVICT_PREPARE;
+        else if ( !hit && !is_dirty ) next_state = STATE_REFILL_REQUEST;
+        else                          next_state = STATE_IDLE;
+      end
+
+      STATE_INIT_DATA_ACCESS: begin
+        next_state = STATE_WAIT;
+      end
+
+      STATE_READ_DATA_ACCESS: begin
+        next_state = STATE_WAIT;
+      end
+
+      STATE_WRITE_DATA_ACCESS: begin
+        next_state = STATE_WAIT;
+      end
+
+      STATE_REFILL_REQUEST: begin
+        if (memreq_rdy) next_state = STATE_REFILL_WAIT;
+        else            next_state = STATE_REFILL_REQUEST;
+      end
+
+      STATE_REFILL_WAIT: begin
+        if (memresp_val)  next_state = STATE_REFILL_UPDATE;
+        else              next_state = STATE_REFILL_WAIT;
+      end
+
+      STATE_REFILL_UPDATE: begin
+        if (is_write)     next_state = STATE_WRITE_DATA_ACCESS;
+        else if (is_read) next_state = STATE_READ_DATA_ACCESS;
+        else              next_state = STATE_IDLE;
+      end
+
+      STATE_EVICT_PREPARE: begin
+        next_state = STATE_EVICT_REQUEST;
+      end
+
+      STATE_EVICT_REQUEST: begin
+        if (memreq_rdy) next_state = STATE_EVICT_WAIT;
+        else            next_state = STATE_EVICT_REQUEST;
+      end
+
+      STATE_EVICT_WAIT: begin
+        if (memresp_val)  next_state = STATE_REFILL_REQUEST;
+        else              next_state = STATE_EVICT_WAIT;
+      end
+
+      STATE_WAIT: begin
+        if (cacheresp_rdy)  next_state = STATE_IDLE;
+        else                next_state = STATE_WAIT;
+      end
+
+      default: begin
+        next_state = STATE_IDLE;
+      end
+
+    endcase
+
+  end
 
 //----------------------------------------------------------------------
   // Valid/Dirty bits record
+  // Store valid and dirty bits for each cache entry / set
   //----------------------------------------------------------------------
 
   logic [3:0] cachereq_addr_index;
 
-  generate
+  always @(*) begin
     if ( p_num_banks == 1 ) begin
-      assign cachereq_addr_index = cachereq_addr[7:4];
+      cachereq_addr_index = cachereq_addr[7:4];
     end
     else if ( p_num_banks == 4 ) begin
-      // handle address mapping for four banks
+      cachereq_addr_index = cachereq_addr[9:6];
     end
-  endgenerate
+  end
 
-  logic valid_bit_in;
-  logic valid_bits_write_en;
-  logic is_valid;
-
-  vc_ResetRegfile_1r1w#(1,16) valid_bits
+  vc_ResetRegfile_1r1w
+  #(
+    .p_data_nbits (1),
+    .p_num_entries(16),
+    .p_reset_value(0)     // On reset, all values are not valid.
+  ) valid_regfile
   (
     .clk        (clk),
     .reset      (reset),
@@ -163,6 +210,22 @@ endmodule
     .write_en   (valid_bits_write_en),
     .write_addr (cachereq_addr_index),
     .write_data (valid_bit_in)
+  );
+
+    vc_ResetRegfile_1r1w
+  #(
+    .p_data_nbits (1),
+    .p_num_entries(16),
+    .p_reset_value(0)     // On reset, all values are not dirty.
+  ) dirty_regfile
+  (
+    .clk        (clk),
+    .reset      (reset),
+    .read_addr  (cachereq_addr_index),
+    .read_data  (is_dirty),
+    .write_en   (dirty_bits_write_en),
+    .write_addr (cachereq_addr_index),
+    .write_data (dirty_bit_in)
   );
 
   //----------------------------------------------------------------------
@@ -179,48 +242,61 @@ endmodule
     input logic cs_data_array_wen,
     input logic cs_data_array_ren,
     input logic cs_valid_bit_in,
-    input logic cs_valid_bits_write_en
+    input logic cs_valid_bits_write_en,
+    input logic cs_dirty_bit_in,
+    input logic cs_dirty_bits_write_en
   );
   begin
-    cachereq_rdy  = cs_cachereq_rdy;
-    cacheresp_val = cs_cacheresp_val;
-    cachereq_reg_en           = cs_cachereq_reg_en;
-    tag_array_wen             = cs_tag_array_wen;
-    tag_array_ren             = cs_tag_array_ren;
-    data_array_wen            = cs_data_array_wen;
-    data_array_ren            = cs_data_array_ren;
-    valid_bit_in              = cs_valid_bit_in;
-    valid_bits_write_en       = cs_valid_bits_write_en;
+    cachereq_rdy        = cs_cachereq_rdy;
+    cacheresp_val       = cs_cacheresp_val;
+    cachereq_reg_en     = cs_cachereq_reg_en;
+    tag_array_wen       = cs_tag_array_wen;
+    tag_array_ren       = cs_tag_array_ren;
+    data_array_wen      = cs_data_array_wen;
+    data_array_ren      = cs_data_array_ren;
+    valid_bit_in        = cs_valid_bit_in;
+    valid_bits_write_en = cs_valid_bits_write_en;
+    dirty_bit_in        = cs_dirty_bit_in;
+    dirty_bits_write_en = cs_dirty_bits_write_en;
   end
   endtask
 
   // Set outputs using a control signal "table"
   always @(*) begin
-                              cs( 0,   0,    0,    0,    0,    0,    0,    0,    0     );
-    case ( state_reg )
-      //                         cache cache cache tag   tag   data  data  valid valid
-      //                         req   resp  req   array array array array bit   write
-      //                         rdy   val   en    wen   ren   wen   ren   in    en
-      STATE_IDLE:             cs( 1,   0,    1,    0,    0,    0,    0,    0,    0     );
-      STATE_TAG_CHECK:        cs( 0,   0,    0,    0,    1,    0,    0,    0,    0     );
-      STATE_INIT_DATA_ACCESS: cs( 0,   1,    1,    0,    0,    1,    1,    0,    0     );
-      STATE_READ_DATA_ACCESS:
-      STATE_WRITE_DATA_ACCESS:
+                               cs( 0,   0,    0,    0,    0,    0,    0,    0,    0      0,    0,  );
+    case ( current_state )
+      //                         cache cache cache tag   tag   data  data  valid valid  dirty dirty
+      //                         req   resp  req   array array array array bit   write  bit   write
+      //                         rdy   val   en    wen   ren   wen   ren   in    en     in    en
+      STATE_IDLE:              cs( 1,   0,    1,    0,    0,    0,    0,    0,    0,      ,        );
+      STATE_TAG_CHECK:         cs( 0,   0,    0,    0,    1,    0,    0,    0,    0,      ,        );
+      STATE_INIT_DATA_ACCESS:  cs( 0,   0,    0,    1,    0,    1,    0,    1,    1,     0,    1   );
+      STATE_READ_DATA_ACCESS:  cs(  ,    ,     ,     ,     ,     ,     ,     ,     ,     0,    1   ); // read data access happens either on read hit or a refill from a miss, so always clean
+      STATE_WRITE_DATA_ACCESS: cs(  ,    ,     ,     ,     ,     ,     ,     ,     ,     1,    1   ); // write data access happens on write hit or refill + write, so always dirty
       STATE_REFILL_REQUEST:
       STATE_REFILL_WAIT:
       STATE_REFILL_UPDATE:
       STATE_EVICT_PREPARE:
       STATE_EVICT_REQUEST:
       STATE_EVICT_WAIT:
-      STATE_WAIT:             cs( 0,   1,    0,    0,    0,    0,    1,    0,    0     );
+      STATE_WAIT:              cs( 0,   1,    0,    0,    0,    0,    0,    0,    0,      ,        );
 
-      default:                cs( 0,   0,    0,    0,    0,    0,    0,    0,    0     );
+      default:                 cs( 1,   0,    1,    0,    0,    0,    0,    0,    0,      ,        ); // do same as IDLE
 
     endcase
   end
 
   // assign memreq_val  = ;
   // assign memresp_rdy = ;
+  // assign memresp_en
+  // assign write_data_mux_sel,
+  // assign read_data_zero_mux_sel,
+  // assign read_data_reg_en,
+  // assign evict_addr_reg_en,
+  // assign cacheresp_type,
+  // assign memreq_type,
+
+endmodule
 
 `endif
 

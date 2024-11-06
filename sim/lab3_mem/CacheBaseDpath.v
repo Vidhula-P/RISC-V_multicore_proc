@@ -43,27 +43,26 @@ module lab3_mem_CacheBaseDpath
   input logic           read_data_zero_mux_sel,
   input logic           read_data_reg_en,
   input logic           evict_addr_reg_en,
-  input logic           cacheresp_type,
+  input logic [3:0]     cacheresp_type,
   input logic           hit,
-  input logic           memreq_type,
+  input logic [3:0]     memreq_type,
 
   // status signals (dpath->ctrl)
 
-  output logic  [2:0]   cachereq_type,
+  output logic  [3:0]   cachereq_type,
   output logic [31:0]   cachereq_addr,
 
   output logic          tag_match
-
 );
 
   // Register the unpacked cachereq_msg
 
   logic [31:0] cachereq_addr_reg_out;
   logic [31:0] cachereq_data_reg_out;
-  logic  [2:0] cachereq_type_reg_out;
+  logic  [3:0] cachereq_type_reg_out;
   logic  [7:0] cachereq_opaque_reg_out;
 
-  vc_EnResetReg #(3,0) cachereq_type_reg
+  vc_EnResetReg #(4,0) cachereq_type_reg
   (
     .clk    (clk),
     .reset  (reset),
@@ -109,17 +108,21 @@ module lab3_mem_CacheBaseDpath
   logic  [3:0] cachereq_addr_index;
   logic [23:0] cachereq_addr_tag;
 
-  generate
+  always @(*) begin
     if ( p_num_banks == 1 ) begin
-      assign cachereq_addr_byte_offset = cachereq_addr[1:0];
-      assign cachereq_addr_word_offset = cachereq_addr[3:2];
-      assign cachereq_addr_index       = cachereq_addr[7:4];
-      assign cachereq_addr_tag         = cachereq_addr[31:8];
+      cachereq_addr_byte_offset = cachereq_addr[1:0];
+      cachereq_addr_word_offset = cachereq_addr[3:2];
+      cachereq_addr_index       = cachereq_addr[7:4];
+      cachereq_addr_tag         = cachereq_addr[31:8];
     end
-    else if ( p_num_banks == 4 ) begin  
+    else if ( p_num_banks == 4 ) begin
       // handle address mapping for four banks
+      cachereq_addr_byte_offset = cachereq_addr[1:0];
+      cachereq_addr_word_offset = cachereq_addr[3:2];
+      cachereq_addr_index       = cachereq_addr[9:6];
+      cachereq_addr_tag         = {cachereq_addr[31:10], 2'b0}; // can either pad tag with zeroes or just include bank?
     end
-  endgenerate
+  end
 
   // Replicate 32-bit cachereq_data to make 128-bit data word
 
@@ -133,18 +136,19 @@ module lab3_mem_CacheBaseDpath
 
   // Register memresp_msg
 
-  logic [127:0] memresp_data_reg;
+  logic [127:0] memresp_data_reg_out;
+  logic [127:0] write_data_mux_out;
 
-  vc_EnResetReg mem_resp_enable
+  vc_EnResetReg
   #(
-    .p_nbits(),
+    .p_nbits(128),
     .p_reset_value(0)
-  )
+  ) memresp_data_reg
   (
     .clk(clk),
     .reset(reset),
-    .d(memresp_msg),
-    .q(memresp_data_reg),    
+    .d(memresp_msg.data),
+    .q(memresp_data_reg_out),
     .en(memresp_en)
   );
 
@@ -154,7 +158,7 @@ module lab3_mem_CacheBaseDpath
   ) write_data_mux
   (
     .in0(cachereq_data_replicated)
-    .in1(memresp_data_reg),
+    .in1(memresp_data_reg_out),
     .sel(write_data_mux_sel),
     .out(write_data_mux_out)
   );
@@ -171,7 +175,7 @@ module lab3_mem_CacheBaseDpath
 
   logic [15:0] wben_mux_out;
 
-  vc_Mux2 
+  vc_Mux2
   #(
     .p_nbits(16)
   ) write_byte_en_mux
@@ -211,7 +215,7 @@ module lab3_mem_CacheBaseDpath
     .in0(cachereq_addr_tag),
     .in1(tag_array_read_out),
     .out(tag_match)
-  );  
+  );
 
   //evicting a cache line back to main memory
   logic [31:0] evict_addr;
@@ -234,7 +238,7 @@ module lab3_mem_CacheBaseDpath
     .reset  (reset),
     .en     (evict_addr_reg_en),
     .d      (evict_addr)
-    .q      (evict_addr_reg_out),    
+    .q      (evict_addr_reg_out),
   );
 
   //refill the data from memory into the correct cache line after miss event
@@ -250,9 +254,9 @@ module lab3_mem_CacheBaseDpath
     .out_(refill),
   );
 
-  vc_Mux2 
+  vc_Mux2
   #(
-    .p_nbits(128)
+    .p_nbits(32)
   ) memreq_addr_mux
   (
     .in0(evict_addr_reg_out)
@@ -263,7 +267,6 @@ module lab3_mem_CacheBaseDpath
 
   // Data array (16 cacheslines, 128 bits/cacheline)
 
-  logic [127:0] write_data_mux_out;
   logic [127:0] data_array_read_out;
 
   vc_CombinationalSRAM_1rw #(128,16) data_array
@@ -281,7 +284,7 @@ module lab3_mem_CacheBaseDpath
 
   logic [127:0] read_data_zero_mux_out;
 
-  vc_Mux2 
+  vc_Mux2
   #(
     .p_nbits(128)
   ) read_data_zero_mux
@@ -302,24 +305,24 @@ module lab3_mem_CacheBaseDpath
     .d      (read_data_zero_mux_out),
     .q      (read_data_reg_out)
   );
-  
+
   logic [31:0] cacheresp_msg_data;
 
   vc_Mux4
   #(
-    .p_nbits()
+    .p_nbits(32)
   ) read_data_mux4 (
-    .in0(read_data_reg_out[127:96]),
-    .in1(read_data_reg_out[95:64]),
-    .in2(read_data_reg_out[63:32]),
-    .in3(read_data_reg_out[31:0]),
+    .in0(read_data_reg_out[31:0]),
+    .in1(read_data_reg_out[63:32]),
+    .in2(read_data_reg_out[95:64]),
+    .in3(read_data_reg_out[127:96]),
     .sel(cachereq_addr_word_offset),
     .out(cacheresp_msg_data)
   );
 
   assign cacheresp_msg.type_  = cacheresp_type;
   assign cacheresp_msg.opaque = cachereq_opaque_reg_out;
-  assign cacheresp_msg.test   = hit;
+  assign cacheresp_msg.test   = {1'b0, hit};
   assign cacheresp_msg.len    = 2'b0;
   assign cacheresp_msg.data   = cacheresp_msg_data;
 
