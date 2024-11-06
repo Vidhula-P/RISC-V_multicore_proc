@@ -245,6 +245,7 @@ module lab3_mem_CacheBaseCtrl
     input logic cs_valid_bits_write_en,
     input logic cs_dirty_bit_in,
     input logic cs_dirty_bits_write_en
+    // TODO: FILL IN MISSING
   );
   begin
     cachereq_rdy        = cs_cachereq_rdy;
@@ -258,43 +259,34 @@ module lab3_mem_CacheBaseCtrl
     valid_bits_write_en = cs_valid_bits_write_en;
     dirty_bit_in        = cs_dirty_bit_in;
     dirty_bits_write_en = cs_dirty_bits_write_en;
+    // TODO: FILL IN MISSING
   end
   endtask
 
   // Set outputs using a control signal "table"
+
   always @(*) begin
-                               cs( 0,   0,    0,    0,    0,    0,    0,    0,    0      0,    0,  );
-    case ( current_state )
-      //                         cache cache cache tag   tag   data  data  valid valid  dirty dirty
-      //                         req   resp  req   array array array array bit   write  bit   write
-      //                         rdy   val   en    wen   ren   wen   ren   in    en     in    en
-      STATE_IDLE:              cs( 1,   0,    1,    0,    0,    0,    0,    0,    0,      ,        );
-      STATE_TAG_CHECK:         cs( 0,   0,    0,    0,    1,    0,    0,    0,    0,      ,        );
-      STATE_INIT_DATA_ACCESS:  cs( 0,   0,    0,    1,    0,    1,    0,    1,    1,     0,    1   );
-      STATE_READ_DATA_ACCESS:  cs(  ,    ,     ,     ,     ,     ,     ,     ,     ,     0,    1   ); // read data access happens either on read hit or a refill from a miss, so always clean
-      STATE_WRITE_DATA_ACCESS: cs(  ,    ,     ,     ,     ,     ,     ,     ,     ,     1,    1   ); // write data access happens on write hit or refill + write, so always dirty
-      STATE_REFILL_REQUEST:
-      STATE_REFILL_WAIT:
-      STATE_REFILL_UPDATE:
-      STATE_EVICT_PREPARE:
-      STATE_EVICT_REQUEST:
-      STATE_EVICT_WAIT:
-      STATE_WAIT:              cs( 0,   1,    0,    0,    0,    0,    0,    0,    0,      ,        );
-
-      default:                 cs( 1,   0,    1,    0,    0,    0,    0,    0,    0,      ,        ); // do same as IDLE
-
-    endcase
+                                    cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_X,           `VC_MEM_REQ_MSG_TYPE_X );
+      case ( current_state )
+              //                        cache cache cache tag   tag   data  data  valid valid  dirty dirty  mem    mem    mem     write  read    read    evict   cache                              mem
+              //                        req   resp  req   array array array array bit   write  bit   write  req    resp   resp    data   zero    data    addr    resp                               req
+              //                        rdy   val   en    wen   ren   wen   ren   in    en     in    en     val    rdy    en      sel    sel     en      en      type                               type
+          STATE_IDLE:               cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx );  // TODO
+          STATE_TAG_CHECK:          cs( 0,    0,    0,    0,    1,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx );  // TODO
+          STATE_INIT_DATA_ACCESS:   cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx );  // TODO
+          // STATE_READ_DATA_ACCESS:   cs(  ,     ,     ,     ,     ,     ,     ,     ,     ,     0,    1,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx ); // Always clean
+          // STATE_WRITE_DATA_ACCESS:  cs(  ,     ,     ,     ,     ,     ,     ,     ,     ,     1,    1,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx ); // Always dirty
+          // STATE_REFILL_REQUEST:
+          // STATE_REFILL_WAIT:
+          // STATE_REFILL_UPDATE:
+          // STATE_EVICT_PREPARE:
+          // STATE_EVICT_REQUEST:
+          // STATE_EVICT_WAIT:
+          STATE_WAIT:               cs( 0,    1,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx );  // TODO
+          default:                  cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,     0,      0,      0,      `VC_MEM_RESP_MSG_TYPE_WRITE_INIT, 4'bx ); // Same as IDLE
+      endcase
   end
 
-  // assign memreq_val  = ;
-  // assign memresp_rdy = ;
-  // assign memresp_en
-  // assign write_data_mux_sel,
-  // assign read_data_zero_mux_sel,
-  // assign read_data_reg_en,
-  // assign evict_addr_reg_en,
-  // assign cacheresp_type,
-  // assign memreq_type,
 
 endmodule
 

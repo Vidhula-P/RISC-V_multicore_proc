@@ -51,9 +51,28 @@ module lab3_mem_CacheBase
   output logic          cache2mem_respstream_rdy
 );
 
-  // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  // LAB TASK: Define wires
-  // '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    // control signals (ctrl->dpath)
+
+  logic        cachereq_reg_en;
+  logic        tag_array_wen;
+  logic        tag_array_ren;
+  logic        data_array_wen;
+  logic        data_array_ren;
+
+  logic        memresp_en;
+  logic        write_data_mux_sel;
+  logic        read_data_zero_mux_sel;
+  logic        read_data_reg_en;
+  logic        evict_addr_reg_en;
+  logic [3:0]  cacheresp_type;
+  logic        hit;
+  logic [3:0]  memreq_type;
+
+  // status signals (dpath->ctrl)
+
+  logic  [3:0] cachereq_type;
+  logic [31:0] cachereq_addr;
+  logic        tag_match;
 
   //----------------------------------------------------------------------
   // Control
@@ -67,17 +86,17 @@ module lab3_mem_CacheBase
   (
    // Processor <-> Cache Interface
 
-   .proc2cache_reqstream_val  (proc2cache_reqstream_val),
-   .proc2cache_reqstream_rdy  (proc2cache_reqstream_rdy),
-   .proc2cache_respstream_val (proc2cache_respstream_val),
-   .proc2cache_respstream_rdy (proc2cache_respstream_rdy),
+   .cachereq_val  (proc2cache_reqstream_val),
+   .cachereq_rdy  (proc2cache_reqstream_rdy),
+   .cacheresp_val (proc2cache_respstream_val),
+   .cacheresp_rdy (proc2cache_respstream_rdy),
 
    // Cache <-> Memory Interface
 
-   .cache2mem_reqstream_val   (cache2mem_reqstream_val),
-   .cache2mem_reqstream_rdy   (cache2mem_reqstream_rdy),
-   .cache2mem_respstream_val  (cache2mem_respstream_val),
-   .cache2mem_respstream_rdy  (cache2mem_respstream_rdy),
+   .memreq_val   (cache2mem_reqstream_val),
+   .memreq_rdy   (cache2mem_reqstream_rdy),
+   .memresp_val  (cache2mem_respstream_val),
+   .memresp_rdy  (cache2mem_respstream_rdy),
 
     // clk/reset/control/status signals
 
@@ -96,13 +115,13 @@ module lab3_mem_CacheBase
   (
    // Processor <-> Cache Interface
 
-   .proc2cache_reqstream_msg  (proc2cache_reqstream_msg),
-   .proc2cache_respstream_msg (proc2cache_respstream_msg),
+   .cachereq_msg  (proc2cache_reqstream_msg),
+   .cacheresp_msg (proc2cache_respstream_msg),
 
    // Cache <-> Memory Interface
 
-   .cache2mem_reqstream_msg   (cache2mem_reqstream_msg),
-   .cache2mem_respstream_msg  (cache2mem_respstream_msg),
+   .memreq_msg   (cache2mem_reqstream_msg),
+   .memresp_msg  (cache2mem_respstream_msg),
 
     // clk/reset/control/status signals
 
