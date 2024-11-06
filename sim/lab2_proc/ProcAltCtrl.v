@@ -487,7 +487,7 @@ module lab2_proc_ProcAltCtrl
 
   // Final ostall signal
   // Additional: Originate a stall if the multiplier is not ready to accept a new signal
-  assign ostall_D = val_D && ( ostall_mngr2proc_D || ostall_hazard_D || !imul_req_rdy_D);
+  assign ostall_D = val_D && ( ostall_mngr2proc_D || ostall_hazard_D || (!imul_req_rdy_D && mul_used_D));
 
   // osquash due to jump instruction in D stage
 
@@ -558,7 +558,7 @@ module lab2_proc_ProcAltCtrl
 
   // if the X stage is stalling, do not want to accept a response from the multiplier
   // since we have no place to store that response
-  assign imul_resp_rdy_X = (!stall_X);
+  assign imul_resp_rdy_X = !stall_X && mul_used_X && val_X;
 
   //----------------------------------------------------------------------
   // X stage
@@ -637,7 +637,7 @@ module lab2_proc_ProcAltCtrl
 
   // ostall due to dmem_reqstream not ready.
   // Additional: stall if the output of the multiplier is not valid
-  assign ostall_X = val_X && ( dmem_type_X != nr ) && !dmem_reqstream_rdy;
+  assign ostall_X = val_X && ((( dmem_type_X != nr ) && !dmem_reqstream_rdy) || ostall_X_mul);
   assign ostall_X_mul = mul_used_X && !imul_resp_val_X;
 
   // Avoid stalling in X stage for ALU-use
@@ -683,7 +683,7 @@ module lab2_proc_ProcAltCtrl
 
   // stall and squash used in X stage
 
-  assign stall_X = val_X && ( ostall_X || ostall_M || ostall_W || ostall_X_mul);
+  assign stall_X = val_X && ( ostall_X || ostall_M || ostall_W);
 
   // set dmem_reqstream_val only if not stalling
 
