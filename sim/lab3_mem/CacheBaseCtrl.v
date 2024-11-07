@@ -341,7 +341,7 @@ module lab3_mem_CacheBaseCtrl
           STATE_TAG_CHECK:          cs( 0,    0,    0,    0,    1,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
           STATE_INIT_DATA_ACCESS:   cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE_INIT,   `VC_MEM_REQ_MSG_TYPE_X);
           STATE_READ_DATA_ACCESS:   cs( 0,    0,    0,    0,    0,    0,    1,    0,    0,     0,    1,     0,     0,     0,      0,      0,    0,     0,       1,      0,       1,     1,        `VC_MEM_RESP_MSG_TYPE_READ,         `VC_MEM_REQ_MSG_TYPE_X); // read data access happens either on read hit or a refill from a miss, so always clean
-          // STATE_WRITE_DATA_ACCESS:  cs(  ,     ,     ,     ,     ,     ,     ,     ,     ,     1,    1,     0,     0,     0,      0,      0,    0,      0,       0,      0,       0,               , ); // write data access happens on write hit or refill + write, so always dirty
+          STATE_WRITE_DATA_ACCESS:  cs( 0,    0,    0,    0,    0,    1,    0,    1,    1,     1,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       1,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE,        `VC_MEM_REQ_MSG_TYPE_X); // write data access happens on write hit or refill + write, so always dirty
           // STATE_REFILL_REQUEST:
           // STATE_REFILL_WAIT:
           // STATE_REFILL_UPDATE:

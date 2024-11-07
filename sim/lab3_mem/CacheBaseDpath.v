@@ -330,7 +330,12 @@ module lab3_mem_CacheBaseDpath
   assign cacheresp_msg.opaque = cachereq_opaque_reg_out;
   assign cacheresp_msg.test   = {1'b0, hit};
   assign cacheresp_msg.len    = 2'b0;
-  assign cacheresp_msg.data   = cacheresp_msg_data;
+
+  always @(*) begin
+    if (cacheresp_type == `VC_MEM_RESP_MSG_TYPE_WRITE_INIT)  cacheresp_msg.data = 0;
+    else if (cacheresp_type == `VC_MEM_RESP_MSG_TYPE_WRITE)  cacheresp_msg.data = 0;
+    else                                                      cacheresp_msg.data = cacheresp_msg_data;
+  end
 
   assign memreq_msg.type_  = memreq_type;
   assign memreq_msg.opaque = 8'b0;
