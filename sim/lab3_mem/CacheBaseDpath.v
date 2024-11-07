@@ -8,6 +8,8 @@
 `include "vc/mem-msgs.v"
 `include "vc/srams.v"
 `include "vc/regs.v"
+`include "vc/muxes.v"
+`include "vc/arithmetic.v"
 
 `include "lab3_mem/WbenDecoder.v"
 `include "lab3_mem/ReplUnit.v"
@@ -40,7 +42,9 @@ module lab3_mem_CacheBaseDpath
 
   input logic           memresp_en,
   input logic           write_data_mux_sel,
+  input logic           wben_mux_sel,
   input logic           read_data_zero_mux_sel,
+  input logic           memreq_addr_mux_sel,
   input logic           read_data_reg_en,
   input logic           evict_addr_reg_en,
   input logic [3:0]     cacheresp_type,
@@ -157,7 +161,7 @@ module lab3_mem_CacheBaseDpath
     .p_nbits(128)
   ) write_data_mux
   (
-    .in0(cachereq_data_replicated)
+    .in0(cachereq_data_replicated),
     .in1(memresp_data_reg_out),
     .sel(write_data_mux_sel),
     .out(write_data_mux_out)
@@ -180,7 +184,7 @@ module lab3_mem_CacheBaseDpath
     .p_nbits(16)
   ) write_byte_en_mux
   (
-    .in0(wben_decoder_out)
+    .in0(wben_decoder_out),
     .in1(16'hFFFF),
     .sel(wben_mux_sel),
     .out(wben_mux_out)
@@ -227,18 +231,18 @@ module lab3_mem_CacheBaseDpath
   ) addr_dataread_index(
     .in_0(tag_array_read_out),
     .in_1(cachereq_addr_index),
-    .out_(evict_addr),
+    .out_(evict_addr)
   );
 
   logic [31:0] evict_addr_reg_out;
 
-  vc_EnResetReg #(3,0) evict_addr_reg
+  vc_EnResetReg #(32,0) evict_addr_reg
   (
     .clk    (clk),
     .reset  (reset),
     .en     (evict_addr_reg_en),
-    .d      (evict_addr)
-    .q      (evict_addr_reg_out),
+    .d      (evict_addr),
+    .q      (evict_addr_reg_out)
   );
 
   //refill the data from memory into the correct cache line after miss event
@@ -251,15 +255,17 @@ module lab3_mem_CacheBaseDpath
   ) addr_tag_index(
     .in_0(cachereq_addr_tag),
     .in_1(cachereq_addr_index),
-    .out_(refill),
+    .out_(refill)
   );
+
+  logic [31:0] memreq_addr_mux_out;
 
   vc_Mux2
   #(
     .p_nbits(32)
   ) memreq_addr_mux
   (
-    .in0(evict_addr_reg_out)
+    .in0(evict_addr_reg_out),
     .in1(refill),
     .sel(memreq_addr_mux_sel),
     .out(memreq_addr_mux_out)
@@ -289,7 +295,7 @@ module lab3_mem_CacheBaseDpath
     .p_nbits(128)
   ) read_data_zero_mux
   (
-    .in0(data_array_read_out)
+    .in0(data_array_read_out),
     .in1(128'b0),
     .sel(read_data_zero_mux_sel),
     .out(read_data_zero_mux_out)
@@ -339,9 +345,9 @@ module lab3_mem_mkaddr
   parameter p_nbits = 1,
   parameter c_nbits = 1
 )(
-  input logic  [p_nbits-1:0] in_0,
-  input logic  [c_nbits-1:0] in_1,
-  output logic               out_
+  input logic  [p_nbits-1:0]              in_0,
+  input logic  [c_nbits-1:0]              in_1,
+  output logic [p_nbits + c_nbits +4-1:0] out_
 );
   //addr of data to evict from cache - tag + index + 0000
   assign out_ = { in_0, in_1, 4'b0};
