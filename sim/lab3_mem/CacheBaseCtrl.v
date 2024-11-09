@@ -240,8 +240,8 @@ module lab3_mem_CacheBaseCtrl
   //----------------------------------------------------------------------
   // Store cache_resp_type and hit in a enable_register
   //----------------------------------------------------------------------
-  logic       hit_cacheresp_type_wen;
-  logic       hit_in;
+  logic       cacheresp_type_wen;
+  logic       hit_wen;
   logic [3:0] cacheresp_type_in;
 
   vc_EnResetReg
@@ -252,9 +252,9 @@ module lab3_mem_CacheBaseCtrl
   (
     .clk(clk),
     .reset(reset),
-    .d(hit_in),
+    .d(cachereq_type == `VC_MEM_REQ_MSG_TYPE_WRITE_INIT ? 1'b0 : hit_TC),
     .q(hit),
-    .en(hit_cacheresp_type_wen)
+    .en(hit_wen)
   );
 
   vc_EnResetReg
@@ -267,7 +267,7 @@ module lab3_mem_CacheBaseCtrl
     .reset(reset),
     .d(cacheresp_type_in),
     .q(cacheresp_type),
-    .en(hit_cacheresp_type_wen)
+    .en(cacheresp_type_wen)
   );
 
   //----------------------------------------------------------------------
@@ -296,8 +296,8 @@ module lab3_mem_CacheBaseCtrl
     input logic         cs_memreq_addr_mux_sel,
     input logic         cs_read_data_reg_en,
     input logic         cs_evict_addr_reg_en,
-    input logic         cs_hit,
-    input logic         cs_hit_cacheresp_type_wen,     // update registered value of hit and cacheresp_type on HIGH
+    input logic         cs_hit_wen,
+    input logic         cs_cacheresp_type_wen,     // update registered value of hit and cacheresp_type on HIGH
     input logic [3:0]   cs_cacheresp_type,
     input logic [3:0]   cs_memreq_type
   );
@@ -322,8 +322,8 @@ module lab3_mem_CacheBaseCtrl
     memreq_addr_mux_sel     = cs_memreq_addr_mux_sel;
     read_data_reg_en        = cs_read_data_reg_en;
     evict_addr_reg_en       = cs_evict_addr_reg_en;
-    hit_in                  = cs_hit;
-    hit_cacheresp_type_wen   = cs_hit_cacheresp_type_wen;
+    hit_wen                 = cs_hit_wen;
+    cacheresp_type_wen      = cs_cacheresp_type_wen;
     cacheresp_type_in       = cs_cacheresp_type;
     memreq_type             = cs_memreq_type;
   end
@@ -332,20 +332,20 @@ module lab3_mem_CacheBaseCtrl
   // Set outputs using a control signal "table"
 
   always @(*) begin
-                                    cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,           `VC_MEM_REQ_MSG_TYPE_X );
+                                    cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X );
       case ( state_reg )
-              //                        cache cache cache tag   tag   data  data  valid valid  dirty dirty  mem    mem    mem     write   wben  read   memreq   read    evict    hit    hit and   cache                               mem
-              //                        req   resp  req   array array array array bit   write  bit   write  req    resp   resp    data    sel   zero   addr     data    addr            cacheresp resp                                req
+              //                        cache cache cache tag   tag   data  data  valid valid  dirty dirty  mem    mem    mem     write   wben  read   memreq   read    evict    hit    cache     cache                               mem
+              //                        req   resp  req   array array array array bit   write  bit   write  req    resp   resp    data    sel   zero   addr     data    addr     wen    resp      resp                                req
               //                        rdy   val   en    wen   ren   wen   ren   in    en     in    en     val    rdy    en      sel           sel    sel      en      en              type wen  type                                type
           STATE_IDLE:               cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_TAG_CHECK:          cs( 0,    0,    0,    0,    1,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_TAG_CHECK:          cs( 0,    0,    0,    0,    1,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       1,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
           STATE_INIT_DATA_ACCESS:   cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE_INIT,   `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_READ_DATA_ACCESS:   cs( 0,    0,    0,    0,    0,    0,    1,    0,    0,     0,    1,     0,     0,     0,      0,      0,    0,     0,       1,      0,       1,     1,        `VC_MEM_RESP_MSG_TYPE_READ,         `VC_MEM_REQ_MSG_TYPE_X); // read data access happens either on read hit or a refill from a miss, so always clean
-          STATE_WRITE_DATA_ACCESS:  cs( 0,    0,    0,    0,    0,    1,    0,    1,    1,     1,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       1,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE,        `VC_MEM_REQ_MSG_TYPE_X); // write data access happens on write hit or refill + write, so always dirty
-          STATE_REFILL_REQUEST:     cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     1,     0,     0,      1,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_READ);
-          STATE_REFILL_WAIT:        cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     1,     1,      1,      1,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_REFILL_UPDATE:      cs( 0,    0,    0,    0,    0,    1,    0,    1,    1,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       1,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE,        `VC_MEM_REQ_MSG_TYPE_X);
-          // STATE_EVICT_PREPARE:
+          STATE_READ_DATA_ACCESS:   cs( 0,    0,    0,    0,    0,    0,    1,    0,    0,     0,    1,     0,     0,     0,      0,      0,    0,     0,       1,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_READ,         `VC_MEM_REQ_MSG_TYPE_X); // read data access happens either on read hit or a refill from a miss, so always clean
+          STATE_WRITE_DATA_ACCESS:  cs( 0,    0,    0,    0,    0,    1,    0,    1,    1,     1,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE,        `VC_MEM_REQ_MSG_TYPE_X); // write data access happens on write hit or refill + write, so always dirty
+          STATE_REFILL_REQUEST:     cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     1,     0,     0,      0,      0,    0,     1,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_READ);
+          STATE_REFILL_WAIT:        cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     1,     1,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_REFILL_UPDATE:      cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    0,     0,     0,     0,      1,      1,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_EVICT_PREPARE:      cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X );
           // STATE_EVICT_REQUEST:
           // STATE_EVICT_WAIT:
           STATE_WAIT:               cs( 0,    1,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
