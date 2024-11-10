@@ -110,6 +110,7 @@ module lab3_mem_CacheBaseDpath
   logic  [1:0] cachereq_addr_byte_offset;
   logic  [1:0] cachereq_addr_word_offset;
   logic  [3:0] cachereq_addr_index;
+  logic  [1:0] cachereq_addr_bank;
   logic [23:0] cachereq_addr_tag;
 
   always @(*) begin
@@ -117,6 +118,7 @@ module lab3_mem_CacheBaseDpath
       cachereq_addr_byte_offset = cachereq_addr[1:0];
       cachereq_addr_word_offset = cachereq_addr[3:2];
       cachereq_addr_index       = cachereq_addr[7:4];
+      cachereq_addr_bank        = 2'b0;
       cachereq_addr_tag         = cachereq_addr[31:8];
     end
     else if ( p_num_banks == 4 ) begin
@@ -124,7 +126,8 @@ module lab3_mem_CacheBaseDpath
       cachereq_addr_byte_offset = cachereq_addr[1:0];
       cachereq_addr_word_offset = cachereq_addr[3:2];
       cachereq_addr_index       = cachereq_addr[9:6];
-      cachereq_addr_tag         = {cachereq_addr[31:10], 2'b0}; // can either pad tag with zeroes or just include bank?
+      cachereq_addr_bank        = cachereq_addr[5:4];
+      cachereq_addr_tag         = {2'b0, cachereq_addr[31:10]}; // can either pad tag with zeroes or just include bank?
     end
   end
 
@@ -224,15 +227,20 @@ module lab3_mem_CacheBaseDpath
   //evicting a cache line back to main memory
   logic [31:0] evict_addr;
 
-  lab3_mem_mkaddr //{read_data, index, 4'b0000}
-  #(
-    .p_nbits(24),
-    .c_nbits(4)
-  ) addr_dataread_index(
-    .in_0(tag_array_read_out),
-    .in_1(cachereq_addr_index),
-    .out_(evict_addr)
-  );
+  if (p_num_banks == 1) begin
+    lab3_mem_mkaddr //{read_data, index, 4'b0000}
+    #(
+      .p_nbits(24),
+      .c_nbits(4)
+    ) addr_dataread_index(
+      .in_0(tag_array_read_out),
+      .in_1(cachereq_addr_index),
+      .out_(evict_addr)
+    );
+  end
+  else begin
+    assign evict_addr = {tag_array_read_out[21:0], cachereq_addr_index, cachereq_addr_bank, 4'b0};
+  end
 
   logic [31:0] evict_addr_reg_out;
 
@@ -248,15 +256,20 @@ module lab3_mem_CacheBaseDpath
   //refill the data from memory into the correct cache line after miss event
   logic [31:0] refill;
 
-  lab3_mem_mkaddr //{tag, index, 4'b0000}
-  #(
-    .p_nbits(24),
-    .c_nbits(4)
-  ) addr_tag_index(
-    .in_0(cachereq_addr_tag),
-    .in_1(cachereq_addr_index),
-    .out_(refill)
-  );
+  if (p_num_banks == 1) begin
+    lab3_mem_mkaddr //{tag, index, 4'b0000}
+    #(
+      .p_nbits(24),
+      .c_nbits(4)
+    ) addr_tag_index(
+      .in_0(cachereq_addr_tag),
+      .in_1(cachereq_addr_index),
+      .out_(refill)
+    );
+  end
+  else begin
+    assign refill = {cachereq_addr[31:4], 4'b0};
+  end
 
   logic [31:0] memreq_addr_mux_out;
 
