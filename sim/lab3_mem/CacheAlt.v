@@ -59,14 +59,13 @@ module lab3_mem_CacheAlt
   logic        hit;
   logic [3:0]  memreq_type;
 
-  logic        way_used;
-  logic        way_used_reg_en;
+  logic        way_used_reg_out;
 
   // status signals (dpath->ctrl)
 
   logic  [3:0] cachereq_type;
   logic [31:0] cachereq_addr;
-  logic        tag_match;
+  logic  [1:0] tag_match;
 
   //----------------------------------------------------------------------
   // Control

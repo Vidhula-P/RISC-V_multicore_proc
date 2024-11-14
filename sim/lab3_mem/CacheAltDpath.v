@@ -51,29 +51,17 @@ module lab3_mem_CacheAltDpath
   input logic           hit,
   input logic [3:0]     memreq_type,
 
-  input logic           way_used_reg_en,
-  input logic           way_used,
+  input logic           way_used_reg_out,
 
   // status signals (dpath->ctrl)
 
   output logic  [3:0]   cachereq_type,
   output logic [31:0]   cachereq_addr,
 
-  output logic          tag_match
+  output logic  [1:0]   tag_match
 );
 
-  
 
-  logic way_used_reg_out;
-
-  vc_EnResetReg #(32,0) way_used_reg
-  (
-    .clk    (clk),
-    .reset  (reset),
-    .en     (way_used_reg_en),
-    .d      (way_used),
-    .q      (way_used_reg_out)
-  );
 
   // Register the unpacked cachereq_msg
 
@@ -225,7 +213,7 @@ module lab3_mem_CacheAltDpath
     .read_addr     (cachereq_addr_index),
     .read_data     (tag_array_read_out_way0),
     .write_en      (tag_array_wen && (way_used_reg_out == 0)),
-    .read_en       (tag_array_ren && (way_used_reg_out == 0)),
+    .read_en       (tag_array_ren), // Cannot only read when way is used! We need to read for tag check in the first place.
     .write_addr    (cachereq_addr_index),
     .write_data    (cachereq_addr_tag)
   );
@@ -246,7 +234,7 @@ module lab3_mem_CacheAltDpath
     .read_addr     (cachereq_addr_index),
     .read_data     (tag_array_read_out_way1),
     .write_en      (tag_array_wen && (way_used_reg_out == 1)),
-    .read_en       (tag_array_ren && (way_used_reg_out == 1)),
+    .read_en       (tag_array_ren),
     .write_addr    (cachereq_addr_index),
     .write_data    (cachereq_addr_tag)
   );
@@ -275,7 +263,7 @@ module lab3_mem_CacheAltDpath
     .out(way1_tag_match)
   );
 
-  assign tag_match = {way0_tag_match , way1_tag_match};
+  assign tag_match = {way1_tag_match, way0_tag_match};
 
   //evicting a cache line back to main memory
   logic [31:0] evict_addr;
@@ -305,15 +293,15 @@ module lab3_mem_CacheAltDpath
   always @(*) begin
     evict_addr = 32'b0;  // Default assignment to avoid latch inference
 
-    if (way_used_reg_out == 0) begin 
+    if (way_used_reg_out == 0) begin
         if (p_num_banks == 1) begin
             evict_addr = evict_addr_way0;
         end
         else begin
             evict_addr = {tag_array_read_out_way0[22:0], cachereq_addr_index, cachereq_addr_bank, 4'b0};
         end
-    end 
-    else if (way_used_reg_out == 1) begin 
+    end
+    else if (way_used_reg_out == 1) begin
         if (p_num_banks == 1) begin
             evict_addr = evict_addr_way1;
         end
@@ -321,7 +309,7 @@ module lab3_mem_CacheAltDpath
             evict_addr = {tag_array_read_out_way1[22:0], cachereq_addr_index, cachereq_addr_bank, 4'b0};
         end
     end
-end
+  end
 
   logic [31:0] evict_addr_reg_out;
 
@@ -349,7 +337,7 @@ end
     );
   end
   else begin
-    assign refill = {cachereq_addr[31:3], 3'b0};
+    assign refill = {cachereq_addr[31:4], 4'b0};
   end
 
   logic [31:0] memreq_addr_mux_out;
@@ -365,16 +353,16 @@ end
     .out(memreq_addr_mux_out)
   );
 
-  // Way 0 Data array (16 cachelines, 128 bits/cacheline)
+  // Way 0 Data array (8 cachelines, 128 bits/cacheline)
 
   logic [127:0] data_array_read_out_way0;
 
-  vc_CombinationalSRAM_1rw #(128,16) data_array_way0
+  vc_CombinationalSRAM_1rw #(128,8) data_array_way0
   (
     .clk           (clk),
     .reset         (reset),
     .read_addr     (cachereq_addr_index),
-    .read_data     (data_array_read_out),
+    .read_data     (data_array_read_out_way0),
     .write_en      (data_array_wen && (way_used_reg_out == 0)),
     .read_en       (data_array_ren && (way_used_reg_out == 0)),
     .write_byte_en (wben_mux_out),
@@ -386,7 +374,7 @@ end
 
   logic [127:0] data_array_read_out_way1;
 
-  vc_CombinationalSRAM_1rw #(128,16) data_array_way1
+  vc_CombinationalSRAM_1rw #(128,8) data_array_way1
   (
     .clk           (clk),
     .reset         (reset),
@@ -458,7 +446,7 @@ end
   always @(*) begin
     if (cacheresp_type == `VC_MEM_RESP_MSG_TYPE_WRITE_INIT)  cacheresp_msg.data = 0;
     else if (cacheresp_type == `VC_MEM_RESP_MSG_TYPE_WRITE)  cacheresp_msg.data = 0;
-    else                                                      cacheresp_msg.data = cacheresp_msg_data;
+    else                                                     cacheresp_msg.data = cacheresp_msg_data;
   end
 
   assign memreq_msg.type_  = memreq_type;

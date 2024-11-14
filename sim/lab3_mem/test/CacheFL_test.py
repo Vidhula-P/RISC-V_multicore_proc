@@ -1389,8 +1389,6 @@ def write_hit_all_cacheline_random():
 
 def read_miss_cacheline_random():
   random_data = data_random()
-  # print(random_data)
-  # assert False
   return [
     #    type  opq  addr   len data                type  opq  test len data
     req( 'rd', 0x1, 0x1000, 0, 0          ), resp( 'rd', 0x1, 0,   0,  random_data[0*2+1] ),
@@ -1418,12 +1416,6 @@ test_case_table_random = mk_test_case_table([
   [ "write_hit_all_cacheline_random",     write_hit_all_cacheline_random,           None,         0.0,  0,  0,  0    ],
   [ "read_miss_cacheline_random",         read_miss_cacheline_random,               data_random,   0.0,  0,  0,  0    ],
 
-
-
-
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # LAB TASK: Add more entries to test case table
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ])
 
 @pytest.mark.parametrize( **test_case_table_random )
