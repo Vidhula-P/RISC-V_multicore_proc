@@ -52,6 +52,8 @@ module lab3_mem_CacheAltCtrl
   output logic        hit,
   output logic [3:0]  memreq_type,
 
+  output logic        lru_bit,
+
   // status signals (dpath->ctrl)
 
   input  logic  [3:0] cachereq_type,
@@ -101,6 +103,7 @@ module lab3_mem_CacheAltCtrl
   logic way1_is_valid;
   logic [1:0] hit_TC;
   assign hit_TC = {(way0_is_valid && tag_match) , (way1_is_valid && tag_match)};
+  
 
   assign is_read  = (cachereq_type == `VC_MEM_REQ_MSG_TYPE_READ);
   assign is_write = (cachereq_type == `VC_MEM_REQ_MSG_TYPE_WRITE);
@@ -273,6 +276,21 @@ module lab3_mem_CacheAltCtrl
     .write_addr (cachereq_addr_index),
     .write_data (dirty_bit_in)
   );
+
+  //----------------------------------------------------------------------
+  // Store Least Recently Used (LRU) bit for ways
+  //----------------------------------------------------------------------
+
+  always @(*) begin
+    if (hit_TC == 2'b10) begin
+      lru_bit = 1; //If way0 is accessed, lru_bit set to (way) 1
+    end else  if (hit_TC == 2'b01) begin
+      lru_bit = 0; //If way1 is accessed, lru_bit set to (way) 0
+    end else begin
+      lru_bit = 1; //Default case- lru_bit set to (way) 1
+    end
+  end 
+
 
   //----------------------------------------------------------------------
   // Store cache_resp_type and hit in a enable_register

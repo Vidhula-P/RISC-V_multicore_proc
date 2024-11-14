@@ -51,6 +51,8 @@ module lab3_mem_CacheAltDpath
   input logic           hit,
   input logic [3:0]     memreq_type,
 
+  input logic           lru_bit,
+
   // status signals (dpath->ctrl)
 
   output logic  [3:0]   cachereq_type,
@@ -287,7 +289,9 @@ module lab3_mem_CacheAltDpath
   );
 
   always @(*) begin
-    if (tag_match == 2'b10) begin // if tag match in way 0
+    evict_addr = 32'b0;  // Default assignment to avoid latch inference
+
+    if (lru_bit == 0) begin // if LRU was way 0, evict way 0
         if (p_num_banks == 1) begin
             evict_addr = evict_addr_way0;
         end
@@ -295,7 +299,7 @@ module lab3_mem_CacheAltDpath
             evict_addr = {tag_array_read_out_way0[22:0], cachereq_addr_index, cachereq_addr_bank, 4'b0};
         end
     end 
-    else if (tag_match == 2'b01) begin // if tag match in way 1
+    else if (lru_bit == 1) begin // if LRU was way 1, evict way 1
         if (p_num_banks == 1) begin
             evict_addr = evict_addr_way1;
         end
@@ -320,10 +324,10 @@ end
   logic [31:0] refill;
 
   if (p_num_banks == 1) begin
-    lab3_mem_mkaddr //{tag, index, 4'b0000}
+    lab3_mem_mkaddr //{tag, index, 3'b000}
     #(
-      .p_nbits(24),
-      .c_nbits(4)
+      .p_nbits(25),
+      .c_nbits(3)
     ) addr_tag_index(
       .in_0(cachereq_addr_tag),
       .in_1(cachereq_addr_index),
@@ -331,7 +335,7 @@ end
     );
   end
   else begin
-    assign refill = {cachereq_addr[31:4], 4'b0};
+    assign refill = {cachereq_addr[31:3], 3'b0};
   end
 
   logic [31:0] memreq_addr_mux_out;
