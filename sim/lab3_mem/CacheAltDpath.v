@@ -51,7 +51,8 @@ module lab3_mem_CacheAltDpath
   input logic           hit,
   input logic [3:0]     memreq_type,
 
-  input logic           lru_bit,
+  input logic           way_used_reg_en,
+  input logic           way_used,
 
   // status signals (dpath->ctrl)
 
@@ -60,6 +61,19 @@ module lab3_mem_CacheAltDpath
 
   output logic          tag_match
 );
+
+  
+
+  logic way_used_reg_out;
+
+  vc_EnResetReg #(32,0) way_used_reg
+  (
+    .clk    (clk),
+    .reset  (reset),
+    .en     (way_used_reg_en),
+    .d      (way_used),
+    .q      (way_used_reg_out)
+  );
 
   // Register the unpacked cachereq_msg
 
@@ -210,8 +224,8 @@ module lab3_mem_CacheAltDpath
     .reset         (reset),
     .read_addr     (cachereq_addr_index),
     .read_data     (tag_array_read_out_way0),
-    .write_en      (tag_array_wen),
-    .read_en       (tag_array_ren),
+    .write_en      (tag_array_wen && (way_used_reg_out == 0)),
+    .read_en       (tag_array_ren && (way_used_reg_out == 0)),
     .write_addr    (cachereq_addr_index),
     .write_data    (cachereq_addr_tag)
   );
@@ -231,8 +245,8 @@ module lab3_mem_CacheAltDpath
     .reset         (reset),
     .read_addr     (cachereq_addr_index),
     .read_data     (tag_array_read_out_way1),
-    .write_en      (tag_array_wen),
-    .read_en       (tag_array_ren),
+    .write_en      (tag_array_wen && (way_used_reg_out == 1)),
+    .read_en       (tag_array_ren && (way_used_reg_out == 1)),
     .write_addr    (cachereq_addr_index),
     .write_data    (cachereq_addr_tag)
   );
@@ -291,7 +305,7 @@ module lab3_mem_CacheAltDpath
   always @(*) begin
     evict_addr = 32'b0;  // Default assignment to avoid latch inference
 
-    if (lru_bit == 0) begin // if LRU was way 0, evict way 0
+    if (way_used_reg_out == 0) begin 
         if (p_num_banks == 1) begin
             evict_addr = evict_addr_way0;
         end
@@ -299,7 +313,7 @@ module lab3_mem_CacheAltDpath
             evict_addr = {tag_array_read_out_way0[22:0], cachereq_addr_index, cachereq_addr_bank, 4'b0};
         end
     end 
-    else if (lru_bit == 1) begin // if LRU was way 1, evict way 1
+    else if (way_used_reg_out == 1) begin 
         if (p_num_banks == 1) begin
             evict_addr = evict_addr_way1;
         end
@@ -351,9 +365,9 @@ end
     .out(memreq_addr_mux_out)
   );
 
-  // Way 0 Data array (16 cacheslines, 128 bits/cacheline)
+  // Way 0 Data array (16 cachelines, 128 bits/cacheline)
 
-  logic [127:0] data_array_read_out;
+  logic [127:0] data_array_read_out_way0;
 
   vc_CombinationalSRAM_1rw #(128,16) data_array_way0
   (
@@ -361,12 +375,42 @@ end
     .reset         (reset),
     .read_addr     (cachereq_addr_index),
     .read_data     (data_array_read_out),
-    .write_en      (data_array_wen),
-    .read_en       (data_array_ren),
+    .write_en      (data_array_wen && (way_used_reg_out == 0)),
+    .read_en       (data_array_ren && (way_used_reg_out == 0)),
     .write_byte_en (wben_mux_out),
     .write_addr    (cachereq_addr_index),
     .write_data    (write_data_mux_out)
   );
+
+  // Way 1 Data array (16 cacheslines, 128 bits/cacheline)
+
+  logic [127:0] data_array_read_out_way1;
+
+  vc_CombinationalSRAM_1rw #(128,16) data_array_way1
+  (
+    .clk           (clk),
+    .reset         (reset),
+    .read_addr     (cachereq_addr_index),
+    .read_data     (data_array_read_out_way1),
+    .write_en      (data_array_wen && (way_used_reg_out == 1)),
+    .read_en       (data_array_ren && (way_used_reg_out == 1)),
+    .write_byte_en (wben_mux_out),
+    .write_addr    (cachereq_addr_index),
+    .write_data    (write_data_mux_out)
+  );
+
+  logic [127:0] data_array_read_out;
+  vc_Mux2
+  #(
+    .p_nbits(128)
+  ) set_select_data_output
+  (
+    .in0(data_array_read_out_way0),
+    .in1(data_array_read_out_way1),
+    .sel(way_used_reg_out),
+    .out(data_array_read_out)
+  );
+
 
   logic [127:0] read_data_zero_mux_out;
 

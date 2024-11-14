@@ -59,7 +59,8 @@ module lab3_mem_CacheAlt
   logic        hit;
   logic [3:0]  memreq_type;
 
-  logic        lru_bit;
+  logic        way_used;
+  logic        way_used_reg_en;
 
   // status signals (dpath->ctrl)
 

@@ -52,7 +52,8 @@ module lab3_mem_CacheAltCtrl
   output logic        hit,
   output logic [3:0]  memreq_type,
 
-  output logic        lru_bit,
+  output logic        way_used_reg_en,
+  output              way_used,
 
   // status signals (dpath->ctrl)
 
@@ -103,6 +104,16 @@ module lab3_mem_CacheAltCtrl
   logic way1_is_valid;
   logic [1:0] hit_TC;
   assign hit_TC = {(way0_is_valid && tag_match) , (way1_is_valid && tag_match)};
+
+  always@(*) begin
+    if (hit_TC == 2'b01) begin
+      way_used = 0;
+    end else if (hit_TC == 2'b10) begin
+      way_used = 1;
+    end else begin
+      way_used = !lru_bit;
+    end
+  end
   
 
   assign is_read  = (cachereq_type == `VC_MEM_REQ_MSG_TYPE_READ);
@@ -115,8 +126,7 @@ module lab3_mem_CacheAltCtrl
   logic way0_is_dirty;
   logic way1_is_dirty;
   logic is_dirty;
-  assign is_dirty = (way0_is_dirty || way1_is_dirty);
-
+  assign is_dirty = (way0_is_dirty && (way_used == 0)) || (way1_is_dirty && (way_used == 1));
 
   always @(*) begin
 
@@ -224,7 +234,7 @@ module lab3_mem_CacheAltCtrl
     .reset      (reset),
     .read_addr  (cachereq_addr_index),
     .read_data  (way0_is_valid),
-    .write_en   (valid_bits_write_en),
+    .write_en   (valid_bits_write_en && (way_used == 0)),
     .write_addr (cachereq_addr_index),
     .write_data (valid_bit_in)
   );
@@ -240,7 +250,7 @@ module lab3_mem_CacheAltCtrl
     .reset      (reset),
     .read_addr  (cachereq_addr_index),
     .read_data  (way1_is_valid),
-    .write_en   (valid_bits_write_en),
+    .write_en   (valid_bits_write_en && (way_used == 1)),
     .write_addr (cachereq_addr_index),
     .write_data (valid_bit_in)
   );
@@ -256,7 +266,7 @@ module lab3_mem_CacheAltCtrl
     .reset      (reset),
     .read_addr  (cachereq_addr_index),
     .read_data  (way0_is_dirty),
-    .write_en   (dirty_bits_write_en),
+    .write_en   (dirty_bits_write_en && (way_used == 0)),
     .write_addr (cachereq_addr_index),
     .write_data (dirty_bit_in)
   );
@@ -272,7 +282,7 @@ module lab3_mem_CacheAltCtrl
     .reset      (reset),
     .read_addr  (cachereq_addr_index),
     .read_data  (way1_is_dirty),
-    .write_en   (dirty_bits_write_en),
+    .write_en   (dirty_bits_write_en && (way_used == 1)),
     .write_addr (cachereq_addr_index),
     .write_data (dirty_bit_in)
   );
@@ -280,6 +290,8 @@ module lab3_mem_CacheAltCtrl
   //----------------------------------------------------------------------
   // Store Least Recently Used (LRU) bit for ways
   //----------------------------------------------------------------------
+
+  logic lru_bit;
 
   always @(*) begin
     if (hit_TC == 2'b10) begin
@@ -353,6 +365,7 @@ module lab3_mem_CacheAltCtrl
     input logic         cs_evict_addr_reg_en,
     input logic         cs_hit_wen,
     input logic         cs_cacheresp_type_wen,     // update registered value of hit and cacheresp_type on HIGH
+    input logic         cs_way_used_reg_en,
     input logic [3:0]   cs_cacheresp_type,
     input logic [3:0]   cs_memreq_type
   );
@@ -379,6 +392,7 @@ module lab3_mem_CacheAltCtrl
     evict_addr_reg_en       = cs_evict_addr_reg_en;
     hit_wen                 = cs_hit_wen;
     cacheresp_type_wen      = cs_cacheresp_type_wen;
+    way_used_reg_en         = cs_way_used_reg_en;
     cacheresp_type_in       = cs_cacheresp_type;
     memreq_type             = cs_memreq_type;
   end
@@ -387,24 +401,24 @@ module lab3_mem_CacheAltCtrl
   // Set outputs using a control signal "table"
 
   always @(*) begin
-                                    cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X );
+                                    cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,        0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X );
       case ( state_reg )
-              //                        cache cache cache tag   tag   data  data  valid valid  dirty dirty  mem    mem    mem     write   wben  read   memreq   read    evict    hit    cache     cache                               mem
-              //                        req   resp  req   array array array array bit   write  bit   write  req    resp   resp    data    sel   zero   addr     data    addr     wen    resp      resp                                req
-              //                        rdy   val   en    wen   ren   wen   ren   in    en     in    en     val    rdy    en      sel           sel    sel      en      en              type wen  type                                type
-          STATE_IDLE:               cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_TAG_CHECK:          cs( 0,    0,    0,    0,    1,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       1,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_INIT_DATA_ACCESS:   cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE_INIT,   `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_READ_DATA_ACCESS:   cs( 0,    0,    0,    0,    0,    0,    1,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       1,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_READ,         `VC_MEM_REQ_MSG_TYPE_X); // read data access does not change if data is dirty. If it was dirty, remain dirty, if it was not dirty, remain not dirty
-          STATE_WRITE_DATA_ACCESS:  cs( 0,    0,    0,    0,    0,    1,    0,    1,    1,     1,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        `VC_MEM_RESP_MSG_TYPE_WRITE,        `VC_MEM_REQ_MSG_TYPE_X); // write data access happens on write hit or refill + write, so always dirty
-          STATE_REFILL_REQUEST:     cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     1,     0,     0,      0,      0,    0,     1,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_READ);
-          STATE_REFILL_WAIT:        cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     1,     1,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_REFILL_UPDATE:      cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      1,      1,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);  // data is always not dirty after refill
-          STATE_EVICT_PREPARE:      cs( 0,    0,    0,    0,    1,    0,    1,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       1,      1,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          STATE_EVICT_REQUEST:      cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     1,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_WRITE);
-          STATE_EVICT_WAIT:         cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     1,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X );
-          STATE_WAIT:               cs( 0,    1,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
-          default:                  cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+              //                        cache cache cache tag   tag   data  data  valid valid  dirty dirty  mem    mem    mem     write   wben  read   memreq   read    evict    hit    cache     way       cache                               mem
+              //                        req   resp  req   array array array array bit   write  bit   write  req    resp   resp    data    sel   zero   addr     data    addr     wen    resp      used      resp                                req
+              //                        rdy   val   en    wen   ren   wen   ren   in    en     in    en     val    rdy    en      sel           sel    sel      en      en              type wen  en        type                                type
+          STATE_IDLE:               cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_TAG_CHECK:          cs( 0,    0,    0,    0,    1,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       1,     0,        1,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_INIT_DATA_ACCESS:   cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        0,        `VC_MEM_RESP_MSG_TYPE_WRITE_INIT,   `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_READ_DATA_ACCESS:   cs( 0,    0,    0,    0,    0,    0,    1,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       1,      0,       0,     1,        0,        `VC_MEM_RESP_MSG_TYPE_READ,         `VC_MEM_REQ_MSG_TYPE_X); // read data access does not change if data is dirty. If it was dirty, remain dirty, if it was not dirty, remain not dirty
+          STATE_WRITE_DATA_ACCESS:  cs( 0,    0,    0,    0,    0,    1,    0,    1,    1,     1,    1,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     1,        0,        `VC_MEM_RESP_MSG_TYPE_WRITE,        `VC_MEM_REQ_MSG_TYPE_X); // write data access happens on write hit or refill + write, so always dirty
+          STATE_REFILL_REQUEST:     cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     1,     0,     0,      0,      0,    0,     1,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_READ);
+          STATE_REFILL_WAIT:        cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     1,     1,      0,      0,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_REFILL_UPDATE:      cs( 0,    0,    0,    1,    0,    1,    0,    1,    1,     0,    1,     0,     0,     0,      1,      1,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);  // data is always not dirty after refill
+          STATE_EVICT_PREPARE:      cs( 0,    0,    0,    0,    1,    0,    1,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       1,      1,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          STATE_EVICT_REQUEST:      cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     1,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_WRITE);
+          STATE_EVICT_WAIT:         cs( 0,    0,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     1,     0,      0,      0,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X );
+          STATE_WAIT:               cs( 0,    1,    0,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
+          default:                  cs( 1,    0,    1,    0,    0,    0,    0,    0,    0,     0,    0,     0,     0,     0,      0,      0,    0,     0,       0,      0,       0,     0,        0,        `VC_MEM_RESP_MSG_TYPE_X,            `VC_MEM_REQ_MSG_TYPE_X);
       endcase
   end
 
