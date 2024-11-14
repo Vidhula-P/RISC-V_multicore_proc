@@ -4,7 +4,7 @@
 
 import pytest
 
-from random import seed, randint, random
+from random import seed, randint, random, choice
 
 from pymtl3 import *
 from pymtl3.stdlib.mem        import MemMsgType
@@ -1397,9 +1397,43 @@ def read_miss_cacheline_random():
     req( 'rd', 0x4, 0x100c, 0, 0          ), resp( 'rd', 0x4, 1,   0,  random_data[3*2+1] ),
   ]
 
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# LAB TASK: Add random test cases
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+def random_address_request_data():
+  calls = []
+  type_list = ['rd', 'wr']
+  reference_memory = data_random()
+  write_addr_list = []
+
+  for _ in range(500):
+    random_addr = (randint(0x1000,0x13FC)//4*4)
+    random_data = randint(0, 0xffffffff)
+    random_type = choice(type_list)
+
+    if random_type == 'wr':
+      write_addr_list.append(random_addr)
+      addr_index = reference_memory.index(random_addr)
+      # Replace the element after the address (the data) with random_data
+      reference_memory[addr_index + 1] = random_data
+      calls.extend([
+        req( 'wr', 0x0, random_addr, 0, random_data ), resp( 'wr', 0x0, 0,   0,  0          ),
+      ])
+    else:
+      addr_index = reference_memory.index(random_addr)
+      # Replace the element after the address (the data) with random_data
+      data_reference = reference_memory[addr_index + 1]
+      calls.extend([
+        req( 'rd', 0x0, random_addr, 0, 0          ), resp( 'rd', 0x0, 0,   0,  data_reference),
+      ])
+
+  # check that all the writes overwrite memory
+  for write_addr in write_addr_list:
+    addr_index = reference_memory.index(write_addr)
+    # Replace the element after the address (the data) with random_data
+    data_reference = reference_memory[addr_index + 1]
+    calls.extend([
+      req( 'rd', 0x0, write_addr, 0, 0          ), resp( 'rd', 0x0, 0,   0,  data_reference),
+    ])
+
+  return calls
 
 test_case_table_random = mk_test_case_table([
   (                                       "msg_func                                 mem_data_func stall lat src sink"),
@@ -1414,7 +1448,10 @@ test_case_table_random = mk_test_case_table([
   # Stride with random data
   [ "read_hit_all_cacheline_random_data", read_hit_all_cacheline_random_data,       None,         0.0,  0,  0,  0    ],
   [ "write_hit_all_cacheline_random",     write_hit_all_cacheline_random,           None,         0.0,  0,  0,  0    ],
-  [ "read_miss_cacheline_random",         read_miss_cacheline_random,               data_random,   0.0,  0,  0,  0    ],
+  [ "read_miss_cacheline_random",         read_miss_cacheline_random,               data_random,   0.0,  0,  0,  0   ],
+
+  # Random address patterns, request types, and data
+  [ "random_address_request_data",         random_address_request_data,             data_random,   0.0,  0,  0,  0   ],
 
 ])
 
@@ -1426,17 +1463,124 @@ def test_random( test_params, cmdline_opts ):
 # Test Cases for Direct Mapped
 #-------------------------------------------------------------------------
 
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# LAB TASK: Add directed test cases explicitly for direct mapped cache
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+def write_hit_dirty_read_miss_dirty_all_cacheline_dmap():
+  return [
+    #    type  opq  addr   len data                type  opq  test len data
+    req( 'wr', 0x0, 0x0000, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ),
+    req( 'wr', 0x1, 0x1010, 0, 0x01010101 ), resp( 'wr', 0x1, 0,   0,  0          ),
+    req( 'wr', 0x2, 0x2020, 0, 0x02020202 ), resp( 'wr', 0x2, 0,   0,  0          ),
+    req( 'wr', 0x3, 0x3030, 0, 0x03030303 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    req( 'wr', 0x4, 0x4040, 0, 0x04040404 ), resp( 'wr', 0x4, 0,   0,  0          ),
+    req( 'wr', 0x5, 0x5050, 0, 0x05050505 ), resp( 'wr', 0x5, 0,   0,  0          ),
+    req( 'wr', 0x6, 0x6060, 0, 0x06060606 ), resp( 'wr', 0x6, 0,   0,  0          ),
+    req( 'wr', 0x7, 0x7070, 0, 0x07070707 ), resp( 'wr', 0x7, 0,   0,  0          ),
+    req( 'wr', 0x8, 0x8080, 0, 0x08080808 ), resp( 'wr', 0x8, 0,   0,  0          ),
+    req( 'wr', 0x9, 0x9090, 0, 0x09090909 ), resp( 'wr', 0x9, 0,   0,  0          ),
+    req( 'wr', 0xa, 0xa0a0, 0, 0x0a0a0a0a ), resp( 'wr', 0xa, 0,   0,  0          ),
+    req( 'wr', 0xb, 0xb0b0, 0, 0x0b0b0b0b ), resp( 'wr', 0xb, 0,   0,  0          ),
+    req( 'wr', 0xc, 0xc0c0, 0, 0x0c0c0c0c ), resp( 'wr', 0xc, 0,   0,  0          ),
+    req( 'wr', 0xd, 0xd0d0, 0, 0x0d0d0d0d ), resp( 'wr', 0xd, 0,   0,  0          ),
+    req( 'wr', 0xe, 0xe0e0, 0, 0x0e0e0e0e ), resp( 'wr', 0xe, 0,   0,  0          ),
+    req( 'wr', 0xf, 0xf0f0, 0, 0x0f0f0f0f ), resp( 'wr', 0xf, 0,   0,  0          ),
+
+    req( 'wr', 0x0, 0x0100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # This set repeats indices for above
+    req( 'wr', 0x1, 0x1110, 0, 0x10101010 ), resp( 'wr', 0x1, 0,   0,  0          ),
+    req( 'wr', 0x2, 0x2120, 0, 0x20202020 ), resp( 'wr', 0x2, 0,   0,  0          ),
+    req( 'wr', 0x3, 0x3130, 0, 0x30303030 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    req( 'wr', 0x4, 0x4140, 0, 0x40404040 ), resp( 'wr', 0x4, 0,   0,  0          ),
+    req( 'wr', 0x5, 0x5150, 0, 0x50505050 ), resp( 'wr', 0x5, 0,   0,  0          ),
+    req( 'wr', 0x6, 0x6160, 0, 0x60606060 ), resp( 'wr', 0x6, 0,   0,  0          ),
+    req( 'wr', 0x7, 0x7170, 0, 0x70707070 ), resp( 'wr', 0x7, 0,   0,  0          ),
+    req( 'wr', 0x8, 0x8180, 0, 0x80808080 ), resp( 'wr', 0x8, 0,   0,  0          ),
+    req( 'wr', 0x9, 0x9190, 0, 0x90909090 ), resp( 'wr', 0x9, 0,   0,  0          ),
+    req( 'wr', 0xa, 0xa1a0, 0, 0xa0a0a0a0 ), resp( 'wr', 0xa, 0,   0,  0          ),
+    req( 'wr', 0xb, 0xb1b0, 0, 0xb0b0b0b0 ), resp( 'wr', 0xb, 0,   0,  0          ),
+    req( 'wr', 0xc, 0xc1c0, 0, 0xc0c0c0c0 ), resp( 'wr', 0xc, 0,   0,  0          ),
+    req( 'wr', 0xd, 0xd1d0, 0, 0xd0d0d0d0 ), resp( 'wr', 0xd, 0,   0,  0          ),
+    req( 'wr', 0xe, 0xe1e0, 0, 0xe0e0e0e0 ), resp( 'wr', 0xe, 0,   0,  0          ),
+    req( 'wr', 0xf, 0xf1f0, 0, 0xf0f0f0f0 ), resp( 'wr', 0xf, 0,   0,  0          ),
+
+    req( 'rd', 0x0, 0x0000, 0, 0          ), resp( 'rd', 0x0, 0,   0,  0x00000000 ), # Should all miss for direct mapped design
+    req( 'rd', 0x1, 0x1010, 0, 0          ), resp( 'rd', 0x1, 0,   0,  0x01010101 ),
+    req( 'rd', 0x2, 0x2020, 0, 0          ), resp( 'rd', 0x2, 0,   0,  0x02020202 ),
+    req( 'rd', 0x3, 0x3030, 0, 0          ), resp( 'rd', 0x3, 0,   0,  0x03030303 ),
+    req( 'rd', 0x4, 0x4040, 0, 0          ), resp( 'rd', 0x4, 0,   0,  0x04040404 ),
+    req( 'rd', 0x5, 0x5050, 0, 0          ), resp( 'rd', 0x5, 0,   0,  0x05050505 ),
+    req( 'rd', 0x6, 0x6060, 0, 0          ), resp( 'rd', 0x6, 0,   0,  0x06060606 ),
+    req( 'rd', 0x7, 0x7070, 0, 0          ), resp( 'rd', 0x7, 0,   0,  0x07070707 ),
+    req( 'rd', 0x8, 0x8080, 0, 0          ), resp( 'rd', 0x8, 0,   0,  0x08080808 ),
+    req( 'rd', 0x9, 0x9090, 0, 0          ), resp( 'rd', 0x9, 0,   0,  0x09090909 ),
+    req( 'rd', 0xa, 0xa0a0, 0, 0          ), resp( 'rd', 0xa, 0,   0,  0x0a0a0a0a ),
+    req( 'rd', 0xb, 0xb0b0, 0, 0          ), resp( 'rd', 0xb, 0,   0,  0x0b0b0b0b ),
+    req( 'rd', 0xc, 0xc0c0, 0, 0          ), resp( 'rd', 0xc, 0,   0,  0x0c0c0c0c ),
+    req( 'rd', 0xd, 0xd0d0, 0, 0          ), resp( 'rd', 0xd, 0,   0,  0x0d0d0d0d ),
+    req( 'rd', 0xe, 0xe0e0, 0, 0          ), resp( 'rd', 0xe, 0,   0,  0x0e0e0e0e ),
+    req( 'rd', 0xf, 0xf0f0, 0, 0          ), resp( 'rd', 0xf, 0,   0,  0x0f0f0f0f ),
+  ]
+
+def write_miss_clean_read_miss_dirty_all_cacheline_dmap():
+  return [
+    #    type  opq  addr   len data                type  opq  test len data
+    req( 'in', 0x0, 0x0000, 0, 0x00000000 ), resp( 'in', 0x0, 0,   0,  0          ),
+    req( 'in', 0x1, 0x1010, 0, 0x01010101 ), resp( 'in', 0x1, 0,   0,  0          ),
+    req( 'in', 0x2, 0x1020, 0, 0x02020202 ), resp( 'in', 0x2, 0,   0,  0          ),
+    req( 'in', 0x3, 0x1030, 0, 0x03030303 ), resp( 'in', 0x3, 0,   0,  0          ),
+    req( 'in', 0x4, 0x1040, 0, 0x04040404 ), resp( 'in', 0x4, 0,   0,  0          ),
+    req( 'in', 0x5, 0x1050, 0, 0x05050505 ), resp( 'in', 0x5, 0,   0,  0          ),
+    req( 'in', 0x6, 0x1060, 0, 0x06060606 ), resp( 'in', 0x6, 0,   0,  0          ),
+    req( 'in', 0x7, 0x1070, 0, 0x07070707 ), resp( 'in', 0x7, 0,   0,  0          ),
+    req( 'in', 0x8, 0x1080, 0, 0x08080808 ), resp( 'in', 0x8, 0,   0,  0          ),
+    req( 'in', 0x9, 0x1090, 0, 0x09090909 ), resp( 'in', 0x9, 0,   0,  0          ),
+    req( 'in', 0xa, 0x10a0, 0, 0x0a0a0a0a ), resp( 'in', 0xa, 0,   0,  0          ),
+    req( 'in', 0xb, 0x10b0, 0, 0x0b0b0b0b ), resp( 'in', 0xb, 0,   0,  0          ),
+    req( 'in', 0xc, 0x10c0, 0, 0x0c0c0c0c ), resp( 'in', 0xc, 0,   0,  0          ),
+    req( 'in', 0xd, 0x10d0, 0, 0x0d0d0d0d ), resp( 'in', 0xd, 0,   0,  0          ),
+    req( 'in', 0xe, 0x10e0, 0, 0x0e0e0e0e ), resp( 'in', 0xe, 0,   0,  0          ),
+    req( 'in', 0xf, 0x10f0, 0, 0x0f0f0f0f ), resp( 'in', 0xf, 0,   0,  0          ),
+
+    req( 'wr', 0x0, 0x1100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # This set repeats indices for above
+    req( 'wr', 0x1, 0x1110, 0, 0x10101010 ), resp( 'wr', 0x1, 0,   0,  0          ),
+    req( 'wr', 0x2, 0x1120, 0, 0x20202020 ), resp( 'wr', 0x2, 0,   0,  0          ),
+    req( 'wr', 0x3, 0x1130, 0, 0x30303030 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    req( 'wr', 0x4, 0x1140, 0, 0x40404040 ), resp( 'wr', 0x4, 0,   0,  0          ),
+    req( 'wr', 0x5, 0x1150, 0, 0x50505050 ), resp( 'wr', 0x5, 0,   0,  0          ),
+    req( 'wr', 0x6, 0x1160, 0, 0x60606060 ), resp( 'wr', 0x6, 0,   0,  0          ),
+    req( 'wr', 0x7, 0x1170, 0, 0x70707070 ), resp( 'wr', 0x7, 0,   0,  0          ),
+    req( 'wr', 0x8, 0x1180, 0, 0x80808080 ), resp( 'wr', 0x8, 0,   0,  0          ),
+    req( 'wr', 0x9, 0x1190, 0, 0x90909090 ), resp( 'wr', 0x9, 0,   0,  0          ),
+    req( 'wr', 0xa, 0x11a0, 0, 0xa0a0a0a0 ), resp( 'wr', 0xa, 0,   0,  0          ),
+    req( 'wr', 0xb, 0x11b0, 0, 0xb0b0b0b0 ), resp( 'wr', 0xb, 0,   0,  0          ),
+    req( 'wr', 0xc, 0x11c0, 0, 0xc0c0c0c0 ), resp( 'wr', 0xc, 0,   0,  0          ),
+    req( 'wr', 0xd, 0x11d0, 0, 0xd0d0d0d0 ), resp( 'wr', 0xd, 0,   0,  0          ),
+    req( 'wr', 0xe, 0x11e0, 0, 0xe0e0e0e0 ), resp( 'wr', 0xe, 0,   0,  0          ),
+    req( 'wr', 0xf, 0x11f0, 0, 0xf0f0f0f0 ), resp( 'wr', 0xf, 0,   0,  0          ),
+
+    req( 'rd', 0x0, 0x0000, 0, 0          ), resp( 'rd', 0x0, 0,   0,  0x00000000 ), # Should all miss for direct mapped design
+    req( 'rd', 0x1, 0x1010, 0, 0          ), resp( 'rd', 0x1, 0,   0,  0xabcd1010 ),
+    req( 'rd', 0x2, 0x1020, 0, 0          ), resp( 'rd', 0x2, 0,   0,  0xabcd1020 ),
+    req( 'rd', 0x3, 0x1030, 0, 0          ), resp( 'rd', 0x3, 0,   0,  0xabcd1030 ),
+    req( 'rd', 0x4, 0x1040, 0, 0          ), resp( 'rd', 0x4, 0,   0,  0xabcd1040 ),
+    req( 'rd', 0x5, 0x1050, 0, 0          ), resp( 'rd', 0x5, 0,   0,  0xabcd1050 ),
+    req( 'rd', 0x6, 0x1060, 0, 0          ), resp( 'rd', 0x6, 0,   0,  0xabcd1060 ),
+    req( 'rd', 0x7, 0x1070, 0, 0          ), resp( 'rd', 0x7, 0,   0,  0xabcd1070 ),
+    req( 'rd', 0x8, 0x1080, 0, 0          ), resp( 'rd', 0x8, 0,   0,  0xabcd1080 ),
+    req( 'rd', 0x9, 0x1090, 0, 0          ), resp( 'rd', 0x9, 0,   0,  0xabcd1090 ),
+    req( 'rd', 0xa, 0x10a0, 0, 0          ), resp( 'rd', 0xa, 0,   0,  0xabcd10a0 ),
+    req( 'rd', 0xb, 0x10b0, 0, 0          ), resp( 'rd', 0xb, 0,   0,  0xabcd10b0 ),
+    req( 'rd', 0xc, 0x10c0, 0, 0          ), resp( 'rd', 0xc, 0,   0,  0xabcd10c0 ),
+    req( 'rd', 0xd, 0x10d0, 0, 0          ), resp( 'rd', 0xd, 0,   0,  0xabcd10d0 ),
+    req( 'rd', 0xe, 0x10e0, 0, 0          ), resp( 'rd', 0xe, 0,   0,  0xabcd10e0 ),
+    req( 'rd', 0xf, 0x10f0, 0, 0          ), resp( 'rd', 0xf, 0,   0,  0xabcd10f0 ),
+  ]
 
 test_case_table_dmap = mk_test_case_table([
-  (                                   "msg_func                         mem_data_func stall lat src sink"),
+  (                                                         "msg_func                                                 mem_data_func stall lat src sink"),
 
+  # Write hit path for dirty line + Read miss path for dirty line + Stress entire cache
+  [ "write_hit_dirty_read_miss_dirty_all_cacheline_dmap",   write_hit_dirty_read_miss_dirty_all_cacheline_dmap,       None,         0.0,  0,  0,  0    ],
 
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # LAB TASK: Add more entries to test case table
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  # Write miss path for clean line + Read miss path for dirty line + Stress entire cache
+  [ "write_miss_clean_read_miss_dirty_all_cacheline_dmap",  write_miss_clean_read_miss_dirty_all_cacheline_dmap,      data_8192B,   0.0,  0,  0,  0    ],
 ])
 
 @pytest.mark.parametrize( **test_case_table_dmap )
@@ -1447,16 +1591,109 @@ def test_dmap( test_params, cmdline_opts ):
 # Test Cases for Set Associative
 #-------------------------------------------------------------------------
 
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# LAB TASK: Add directed test cases explicitly for set associative cache
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+def write_miss_read_hit_dirty_all_cacheline_sassoc():
+  return [
+    #    type  opq  addr   len data                type  opq  test len data
+    # Way 0
+    req( 'wr', 0x0, 0x0000, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ),
+    req( 'wr', 0x1, 0x1010, 0, 0x01010101 ), resp( 'wr', 0x1, 0,   0,  0          ),
+    req( 'wr', 0x2, 0x2020, 0, 0x02020202 ), resp( 'wr', 0x2, 0,   0,  0          ),
+    req( 'wr', 0x3, 0x3030, 0, 0x03030303 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    req( 'wr', 0x4, 0x4040, 0, 0x04040404 ), resp( 'wr', 0x4, 0,   0,  0          ),
+    req( 'wr', 0x5, 0x5050, 0, 0x05050505 ), resp( 'wr', 0x5, 0,   0,  0          ),
+    req( 'wr', 0x6, 0x6060, 0, 0x06060606 ), resp( 'wr', 0x6, 0,   0,  0          ),
+    req( 'wr', 0x7, 0x7070, 0, 0x07070707 ), resp( 'wr', 0x7, 0,   0,  0          ),
+
+    # Way 1
+    req( 'wr', 0x0, 0x0100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ),
+    req( 'wr', 0x1, 0x1110, 0, 0x10101010 ), resp( 'wr', 0x1, 0,   0,  0          ),
+    req( 'wr', 0x2, 0x2120, 0, 0x20202020 ), resp( 'wr', 0x2, 0,   0,  0          ),
+    req( 'wr', 0x3, 0x3130, 0, 0x30303030 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    req( 'wr', 0x4, 0x4140, 0, 0x40404040 ), resp( 'wr', 0x4, 0,   0,  0          ),
+    req( 'wr', 0x5, 0x5150, 0, 0x50505050 ), resp( 'wr', 0x5, 0,   0,  0          ),
+    req( 'wr', 0x6, 0x6160, 0, 0x60606060 ), resp( 'wr', 0x6, 0,   0,  0          ),
+    req( 'wr', 0x7, 0x7170, 0, 0x70707070 ), resp( 'wr', 0x7, 0,   0,  0          ),
+
+    req( 'rd', 0x0, 0x0000, 0, 0          ), resp( 'rd', 0x0, 1,   0,  0x00000000 ), # Should all still hit for 2 way set-assoc design
+    req( 'rd', 0x1, 0x1010, 0, 0          ), resp( 'rd', 0x1, 1,   0,  0x01010101 ),
+    req( 'rd', 0x2, 0x2020, 0, 0          ), resp( 'rd', 0x2, 1,   0,  0x02020202 ),
+    req( 'rd', 0x3, 0x3030, 0, 0          ), resp( 'rd', 0x3, 1,   0,  0x03030303 ),
+    req( 'rd', 0x4, 0x4040, 0, 0          ), resp( 'rd', 0x4, 1,   0,  0x04040404 ),
+    req( 'rd', 0x5, 0x5050, 0, 0          ), resp( 'rd', 0x5, 1,   0,  0x05050505 ),
+    req( 'rd', 0x6, 0x6060, 0, 0          ), resp( 'rd', 0x6, 1,   0,  0x06060606 ),
+    req( 'rd', 0x7, 0x7070, 0, 0          ), resp( 'rd', 0x7, 1,   0,  0x07070707 ),
+  ]
+
+def write_miss_clean_read_hit_dirty_all_cacheline_sassoc():
+  return [
+    #    type  opq  addr   len data                type  opq  test len data
+    req( 'in', 0x0, 0x0000, 0, 0x00000000 ), resp( 'in', 0x0, 0,   0,  0          ),
+    req( 'in', 0x1, 0x1010, 0, 0x01010101 ), resp( 'in', 0x1, 0,   0,  0          ),
+    req( 'in', 0x2, 0x1020, 0, 0x02020202 ), resp( 'in', 0x2, 0,   0,  0          ),
+    req( 'in', 0x3, 0x1030, 0, 0x03030303 ), resp( 'in', 0x3, 0,   0,  0          ),
+    req( 'in', 0x4, 0x1040, 0, 0x04040404 ), resp( 'in', 0x4, 0,   0,  0          ),
+    req( 'in', 0x5, 0x1050, 0, 0x05050505 ), resp( 'in', 0x5, 0,   0,  0          ),
+    req( 'in', 0x6, 0x1060, 0, 0x06060606 ), resp( 'in', 0x6, 0,   0,  0          ),
+    req( 'in', 0x7, 0x1070, 0, 0x07070707 ), resp( 'in', 0x7, 0,   0,  0          ),
+
+    req( 'wr', 0x0, 0x1100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # This set repeats indices for above
+    req( 'wr', 0x1, 0x1110, 0, 0x10101010 ), resp( 'wr', 0x1, 0,   0,  0          ),
+    req( 'wr', 0x2, 0x1120, 0, 0x20202020 ), resp( 'wr', 0x2, 0,   0,  0          ),
+    req( 'wr', 0x3, 0x1130, 0, 0x30303030 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    req( 'wr', 0x4, 0x1140, 0, 0x40404040 ), resp( 'wr', 0x4, 0,   0,  0          ),
+    req( 'wr', 0x5, 0x1150, 0, 0x50505050 ), resp( 'wr', 0x5, 0,   0,  0          ),
+    req( 'wr', 0x6, 0x1160, 0, 0x60606060 ), resp( 'wr', 0x6, 0,   0,  0          ),
+    req( 'wr', 0x7, 0x1170, 0, 0x70707070 ), resp( 'wr', 0x7, 0,   0,  0          ),
+
+    req( 'rd', 0x0, 0x0000, 0, 0          ), resp( 'rd', 0x0, 1,   0,  0x00000000 ), # Should all hit for 2 way set assoc design
+    req( 'rd', 0x1, 0x1010, 0, 0          ), resp( 'rd', 0x1, 1,   0,  0x01010101 ), # and data should be different
+    req( 'rd', 0x2, 0x1020, 0, 0          ), resp( 'rd', 0x2, 1,   0,  0x02020202 ),
+    req( 'rd', 0x3, 0x1030, 0, 0          ), resp( 'rd', 0x3, 1,   0,  0x03030303 ),
+    req( 'rd', 0x4, 0x1040, 0, 0          ), resp( 'rd', 0x4, 1,   0,  0x04040404 ),
+    req( 'rd', 0x5, 0x1050, 0, 0          ), resp( 'rd', 0x5, 1,   0,  0x05050505 ),
+    req( 'rd', 0x6, 0x1060, 0, 0          ), resp( 'rd', 0x6, 1,   0,  0x06060606 ),
+    req( 'rd', 0x7, 0x1070, 0, 0          ), resp( 'rd', 0x7, 1,   0,  0x07070707 ),
+  ]
+
+def lru_bit_single_cacheline_sassoc():
+  return [
+    req( 'wr', 0x0, 0x0100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # Set 0 Way 0. Set 0 LRU is now 1
+    req( 'wr', 0x0, 0x1100, 0, 0x00001111 ), resp( 'wr', 0x0, 0,   0,  0          ), # Set 0 Way 1. Set 0 LRU is now 0
+
+    # This should overwrite Set 0 Way 0.
+    req( 'wr', 0x3, 0x2100, 0, 0x20202020 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    # Read for what should be in Set 0 Way 1. It should be a hit to show that it is not evicted in the last instruction.
+    req( 'rd', 0x3, 0x1100, 0, 0          ), resp( 'rd', 0x3, 1,   0,  0x00001111 ),
+  ]
+
+def lru_bit_multi_cacheline_sassoc():
+  return [
+    req( 'wr', 0x0, 0x0100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # Set 0 Way 0. Set 0 LRU is now 1
+    req( 'wr', 0x0, 0x1100, 0, 0x00001111 ), resp( 'wr', 0x0, 0,   0,  0          ), # Set 0 Way 1. Set 0 LRU is now 0
+
+    req( 'wr', 0x1, 0x0110, 0, 0x10101010 ), resp( 'wr', 0x1, 0,   0,  0          ), # Set 1 Way 0. Set 1 LRU is now 1
+    req( 'wr', 0x1, 0x1110, 0, 0x11110000 ), resp( 'wr', 0x1, 0,   0,  0          ), # Set 1 Way 0. Set 1 LRU is now 0
+
+    req( 'rd', 0x2, 0x0110, 0, 0          ), resp( 'rd', 0x2, 1,   0,  0x10101010 ), # Set 1 Way 0. Set 1 LRU is now 1
+
+    # This should overwrite Set 0 Way 0. If it uses Way 1, it means that the LRU bit is not stored correctly and independently between cache lines
+    req( 'wr', 0x3, 0x2100, 0, 0x20202020 ), resp( 'wr', 0x3, 0,   0,  0          ),
+    # Read for what should be in Set 0 Way 1. It should be a hit to show that it is not evicted in the last instruction.
+    req( 'rd', 0x3, 0x1100, 0, 0          ), resp( 'rd', 0x3, 1,   0,  0x00001111 ),
+  ]
 
 test_case_table_sassoc = mk_test_case_table([
-  (                       "msg_func            mem_data_func    stall lat src sink"),
+  (                                                           "msg_func                                                 mem_data_func    stall lat src sink"),
 
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # LAB TASK: Add more entries to test case table
-  # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  # Write miss with refill, no eviction + read hit for dirty line + Stress test entire cache
+  [ "write_miss_read_hit_dirty_all_cacheline_sassoc",         write_miss_read_hit_dirty_all_cacheline_sassoc,           None,         0.0,  0,  0,  0    ],
+  [ "write_miss_clean_read_hit_dirty_all_cacheline_sassoc",   write_miss_clean_read_hit_dirty_all_cacheline_sassoc,     data_8192B,   0.0,  0,  0,  0    ],
+
+  # LRU bit basic testing
+  [ "lru_bit_single_cacheline_sassoc",                        lru_bit_single_cacheline_sassoc,                          None,         0.0,  0,  0,  0    ],
+
+  # Test to make sure that the LRU is correctly maintained independently for each cache line, when multiple cache lines are used
+  [ "lru_bit_multi_cacheline_sassoc",                         lru_bit_multi_cacheline_sassoc,                           None,         0.0,  0,  0,  0    ],
 ])
 
 @pytest.mark.parametrize( **test_case_table_sassoc )
