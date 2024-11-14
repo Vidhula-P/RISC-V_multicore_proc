@@ -8,19 +8,9 @@ import os
 
 from subprocess import check_call, CalledProcessError
 
-impls  = [ "fl" ]
-inputs = [ "loop1", "loop2", "loop3" ]
+impls  = [ "fl" , "base", "alt" ]
+inputs = [ "loop1", "loop2", "loop3" , "good_spatial", "bad_spatial", "good_temporal", "bad_temporal", "conflict_loop", "random_access"]
 
-# ''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Once you get your baseline and alternative design passing all of your
-# tests and once you have your simulator working, then update the impls
-# list to include "base" and "alt" so that this test case will help make
-# sure your simulator is always working. You can do that by adding
-# something like this:
-#
-#  impls += [ "base", "alt" ]
-#
-# ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 test_cases = []
 for input_ in inputs:

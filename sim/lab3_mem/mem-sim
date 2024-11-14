@@ -7,7 +7,7 @@
 #  -v --verbose        Verbose mode
 #
 #  --impl impl         {fl,base,alt}
-#  --input dataset     {loop1,loop2,loop3}
+#  --input dataset     {loop1,loop2,loop3, good_spatial, bad_spatial, good_temporal, bad_temporal, conflict_loop, random_access}
 #  --trace             Display line tracing
 #  --stats             Display statistics
 #  --dump-vcd          Dump VCD to mem-impl-input.vcd
@@ -33,14 +33,36 @@
 #     for ( i = 0; i < 100; i ++ )
 #       result += a[i]*b[i] + c[i]
 #
-# Author : Shreesha Srinath, Moyang Wang, Christopher Batten
-# Date   : October 8, 2015, updated October 31, 2022
+#   good_spatial:
+#     a array allocated at 0x1000
+#     for ( i = 0; i < 100; i++ )
+#       for ( j = 0; i < 4; i++ )
+#         result += a[i][j];
 #
+#   bad_spatial:
+#     a array allocated at 0x1000
+#     for ( i = 0; i < 100; i++ )
+#       for ( j = 0; i < 4; i++ )
+#         result += a[j][i];
+#
+#   good_temporal:
+#     a array allocated at 0x1000
+#     for ( i = 0; i < 100; i ++ )
+#       result += a[0]
+#   
+#   bad_temporal:
+#     a array allocated at 0x1000
+#     for ( i = 0; i < 100; i ++ )
+#       result += a[i][i]
+#
+#   conflict_loop:
 
 # Hack to add project root to python path
 
 import os
 import sys
+
+import random
 
 sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
 while sim_dir:
@@ -86,15 +108,11 @@ def parse_cmdline():
   p.add_argument( "-h", "--help",     action="store_true"                         )
   p.add_argument(       "--impl",     choices=["fl","base", "alt"], default="fl"  )
 
-  #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # LAB TASK: Add choices to --input option to use your new patterns
-  #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-  p.add_argument(       "--input",    choices=["loop1", "loop2", "loop3"], default="loop1" )
-  p.add_argument(       "--trace",    action="store_true"                                          )
-  p.add_argument(       "--stats",    action="store_true"                                          )
-  p.add_argument(       "--dump-vcd", action="store_true"                                          )
-  p.add_argument(       "--mem-lat",  type=int,                                  default=20        )
+  p.add_argument(       "--input",    choices=["loop1", "loop2", "loop3", "good_spatial", "bad_spatial", "good_temporal", "bad_temporal", "conflict_loop", "random_access"], default="loop1" )
+  p.add_argument(       "--trace",    action="store_true"                                                                 )
+  p.add_argument(       "--stats",    action="store_true"                                                                 )
+  p.add_argument(       "--dump-vcd", action="store_true"                                                                 )
+  p.add_argument(       "--mem-lat",  type=int,                                                            default=20     )
 
   opts = p.parse_args()
   if opts.help: p.error()
@@ -170,7 +188,6 @@ def loop3():
     mem.append( 0x00001000+i*4 )
     mem.append( 0xabcd1000+i*4 )
 
-  for i in range( 100 ):
     mem.append( 0x00002000+i*4 )
     mem.append( 0xabcd2000+i*4 )
 
@@ -193,9 +210,182 @@ def loop3():
 
   return [ imsgs, omsgs, mem ]
 
-#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# LAB TASK: Add more memory access patterns to evaluate your cache
-#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+#-------------------------------------------------------------------------
+# Pattern: good_spatial
+# The loop accessses memory in sequence
+#-------------------------------------------------------------------------
+
+def good_spatial():
+ 
+  # return memory message
+
+  mem = []
+  input_addr  = 0x00001000
+  output_addr = 0xabcd1000
+
+  for i in range( 100 ):
+    for j in range( 4 ):
+      mem.append(input_addr  + i*100 + 4*j)
+      mem.append(output_addr + i*100 + 4*j)
+
+  # return src/sink message
+
+  imsgs = []
+  omsgs = []
+
+  for i in range( 100 ):
+    for j in range( 4 ):
+      step = 4*j
+      imsgs.append( req ( 'rd', i, input_addr+ i*100 +4*j, 0, 0 ) )
+      omsgs.append( resp( 'rd', i, 0, 0, output_addr+ i*100 + 4*j ) )
+
+  return [imsgs, omsgs, mem]
+
+
+#-------------------------------------------------------------------------
+# Pattern: bad_spatial
+# 
+#-------------------------------------------------------------------------
+
+def bad_spatial():
+ 
+  # return memory message
+
+  mem = []
+  input_addr  = 0x00001000
+  output_addr = 0xabcd1000
+
+  for i in range( 100 ):
+    for j in range( 4 ):
+      mem.append(input_addr  + j*100 + 4*i)
+      mem.append(output_addr + j*100 + 4*i)
+
+  # return src/sink message
+
+  imsgs = []
+  omsgs = []
+
+  for i in range( 100 ):
+    for j in range( 4 ):
+      step = 4*j
+      imsgs.append( req ( 'rd', i, input_addr+ j*100 +4*i, 0, 0 ) )
+      omsgs.append( resp( 'rd', i, 0, 0, output_addr+ j*100 + 4*i ) )
+
+  return [imsgs, omsgs, mem]
+
+#-------------------------------------------------------------------------
+# Pattern: good_temporal
+#
+#-------------------------------------------------------------------------
+
+def good_temporal():
+
+  # return memory message
+
+  mem = []
+  input_addr1 = 0x00001000
+  output_addr1 = 0xabcd1000
+
+  for i in range( 100 ):
+    mem.append( input_addr1 +i*4 )
+    mem.append( output_addr1 +i*4 )
+  
+
+  # return src/sink message
+
+  imsgs = []
+  omsgs = []
+
+  for i in range( 97 ):
+    imsgs.append( req ( 'rd', i, input_addr1, 0, 0 ) )
+    omsgs.append( resp( 'rd', i, 0, 0, output_addr1 ) )
+
+  return [ imsgs, omsgs, mem ]
+
+#-------------------------------------------------------------------------
+# Pattern: bad_temporal
+# This loop accesses i in two separate loops, exhibiting bad temporal locality
+#-------------------------------------------------------------------------
+
+def bad_temporal():
+
+  # return memory message
+
+  mem = []
+  input_addr1 = 0x00001000
+  output_addr1 = 0xabcd1000
+
+  for i in range( 100 ):
+    mem.append( input_addr1 + (i%2)*256 )
+    mem.append( output_addr1 + (i%2)*256 )
+
+  # return src/sink message
+
+  imsgs = []
+  omsgs = []
+
+  for i in range( 50 ):
+    imsgs.append( req ( 'rd', i, input_addr1 + (i%2)*256, 0, 0 ) )
+    omsgs.append( resp( 'rd', i, 0, 0, output_addr1 + (i%2)*256 ) )
+
+  return [ imsgs, omsgs, mem ]
+
+#-------------------------------------------------------------------------
+# conflict_loop
+# repeated accesses to two addresses that map to the same cache line
+#-------------------------------------------------------------------------
+
+def conflict_loop():
+    mem = []
+    input_addr1 = 0x00001000
+    output_addr1 = 0xabcd1000
+
+    input_addr2 = 0x00002000
+    output_addr2 = 0xabcd2000
+
+    for i in range( 100 ):
+      mem.append( input_addr1 )
+      mem.append( output_addr1 )
+    
+    for i in range( 100 ):
+      mem.append( input_addr2 )
+      mem.append( output_addr2 )
+
+    # return src/sink message
+
+    imsgs = []
+    omsgs = []
+
+    for i in range(100):
+        imsgs.append(req('rd', i, input_addr1, 0, 0))
+        omsgs.append(resp('rd', i, 0, 0, output_addr1))
+
+        imsgs.append(req('rd', i, input_addr2, 0, 0))
+        omsgs.append(resp('rd', i, 0, 0, output_addr2))
+    return [imsgs, omsgs, mem]
+
+#-------------------------------------------------------------------------
+# Random memory locations
+#-------------------------------------------------------------------------
+
+def random_access():
+    mem = []
+    offset = []
+    input_addr1 = 0x00001000
+    output_addr1 = 0xabcd1000
+
+    for i in range(100):      
+      offset.append(random.randint(0, 0xfff))
+      mem.append( input_addr1 + offset[i] * 4)
+      mem.append(output_addr1 + offset[i] * 4)
+    
+    imsgs = []
+    omsgs = []
+
+    for i in range(100):
+      imsgs.append(req('rd', i, input_addr1 + offset[i] * 4, 0, 0))
+      omsgs.append(resp('rd', i, 0, 0, output_addr1 + offset[i] * 4))
+    return [imsgs, omsgs, mem]
 
 #-------------------------------------------------------------------------
 # Main
@@ -215,14 +405,15 @@ def main():
   # Determine which pattern to use and create the pattern
 
   input_dict = {
-    'loop1' : loop1,
-    'loop2' : loop2,
-    'loop3' : loop3,
-
-    #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # LAB TASK: Add your new patterns to this Python dict
-    #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+    'loop1'        : loop1,
+    'loop2'        : loop2,
+    'loop3'        : loop3,
+    'good_spatial' : good_spatial,
+    'bad_spatial'  : bad_spatial,
+    'good_temporal': good_temporal,
+    'bad_temporal' : bad_temporal,
+    'conflict_loop': conflict_loop,
+    'random_access': random_access
   }
 
   [ imsgs, omsgs, mem ] = input_dict[ opts.input ]()
