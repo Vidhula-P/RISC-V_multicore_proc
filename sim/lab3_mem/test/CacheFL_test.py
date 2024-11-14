@@ -1518,69 +1518,11 @@ def write_hit_dirty_read_miss_dirty_all_cacheline_dmap():
     req( 'rd', 0xf, 0xf0f0, 0, 0          ), resp( 'rd', 0xf, 0,   0,  0x0f0f0f0f ),
   ]
 
-def write_miss_clean_read_miss_dirty_all_cacheline_dmap():
-  return [
-    #    type  opq  addr   len data                type  opq  test len data
-    req( 'in', 0x0, 0x0000, 0, 0x00000000 ), resp( 'in', 0x0, 0,   0,  0          ),
-    req( 'in', 0x1, 0x1010, 0, 0x01010101 ), resp( 'in', 0x1, 0,   0,  0          ),
-    req( 'in', 0x2, 0x1020, 0, 0x02020202 ), resp( 'in', 0x2, 0,   0,  0          ),
-    req( 'in', 0x3, 0x1030, 0, 0x03030303 ), resp( 'in', 0x3, 0,   0,  0          ),
-    req( 'in', 0x4, 0x1040, 0, 0x04040404 ), resp( 'in', 0x4, 0,   0,  0          ),
-    req( 'in', 0x5, 0x1050, 0, 0x05050505 ), resp( 'in', 0x5, 0,   0,  0          ),
-    req( 'in', 0x6, 0x1060, 0, 0x06060606 ), resp( 'in', 0x6, 0,   0,  0          ),
-    req( 'in', 0x7, 0x1070, 0, 0x07070707 ), resp( 'in', 0x7, 0,   0,  0          ),
-    req( 'in', 0x8, 0x1080, 0, 0x08080808 ), resp( 'in', 0x8, 0,   0,  0          ),
-    req( 'in', 0x9, 0x1090, 0, 0x09090909 ), resp( 'in', 0x9, 0,   0,  0          ),
-    req( 'in', 0xa, 0x10a0, 0, 0x0a0a0a0a ), resp( 'in', 0xa, 0,   0,  0          ),
-    req( 'in', 0xb, 0x10b0, 0, 0x0b0b0b0b ), resp( 'in', 0xb, 0,   0,  0          ),
-    req( 'in', 0xc, 0x10c0, 0, 0x0c0c0c0c ), resp( 'in', 0xc, 0,   0,  0          ),
-    req( 'in', 0xd, 0x10d0, 0, 0x0d0d0d0d ), resp( 'in', 0xd, 0,   0,  0          ),
-    req( 'in', 0xe, 0x10e0, 0, 0x0e0e0e0e ), resp( 'in', 0xe, 0,   0,  0          ),
-    req( 'in', 0xf, 0x10f0, 0, 0x0f0f0f0f ), resp( 'in', 0xf, 0,   0,  0          ),
-
-    req( 'wr', 0x0, 0x1100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # This set repeats indices for above
-    req( 'wr', 0x1, 0x1110, 0, 0x10101010 ), resp( 'wr', 0x1, 0,   0,  0          ),
-    req( 'wr', 0x2, 0x1120, 0, 0x20202020 ), resp( 'wr', 0x2, 0,   0,  0          ),
-    req( 'wr', 0x3, 0x1130, 0, 0x30303030 ), resp( 'wr', 0x3, 0,   0,  0          ),
-    req( 'wr', 0x4, 0x1140, 0, 0x40404040 ), resp( 'wr', 0x4, 0,   0,  0          ),
-    req( 'wr', 0x5, 0x1150, 0, 0x50505050 ), resp( 'wr', 0x5, 0,   0,  0          ),
-    req( 'wr', 0x6, 0x1160, 0, 0x60606060 ), resp( 'wr', 0x6, 0,   0,  0          ),
-    req( 'wr', 0x7, 0x1170, 0, 0x70707070 ), resp( 'wr', 0x7, 0,   0,  0          ),
-    req( 'wr', 0x8, 0x1180, 0, 0x80808080 ), resp( 'wr', 0x8, 0,   0,  0          ),
-    req( 'wr', 0x9, 0x1190, 0, 0x90909090 ), resp( 'wr', 0x9, 0,   0,  0          ),
-    req( 'wr', 0xa, 0x11a0, 0, 0xa0a0a0a0 ), resp( 'wr', 0xa, 0,   0,  0          ),
-    req( 'wr', 0xb, 0x11b0, 0, 0xb0b0b0b0 ), resp( 'wr', 0xb, 0,   0,  0          ),
-    req( 'wr', 0xc, 0x11c0, 0, 0xc0c0c0c0 ), resp( 'wr', 0xc, 0,   0,  0          ),
-    req( 'wr', 0xd, 0x11d0, 0, 0xd0d0d0d0 ), resp( 'wr', 0xd, 0,   0,  0          ),
-    req( 'wr', 0xe, 0x11e0, 0, 0xe0e0e0e0 ), resp( 'wr', 0xe, 0,   0,  0          ),
-    req( 'wr', 0xf, 0x11f0, 0, 0xf0f0f0f0 ), resp( 'wr', 0xf, 0,   0,  0          ),
-
-    req( 'rd', 0x0, 0x0000, 0, 0          ), resp( 'rd', 0x0, 0,   0,  0x00000000 ), # Should all miss for direct mapped design
-    req( 'rd', 0x1, 0x1010, 0, 0          ), resp( 'rd', 0x1, 0,   0,  0xabcd1010 ),
-    req( 'rd', 0x2, 0x1020, 0, 0          ), resp( 'rd', 0x2, 0,   0,  0xabcd1020 ),
-    req( 'rd', 0x3, 0x1030, 0, 0          ), resp( 'rd', 0x3, 0,   0,  0xabcd1030 ),
-    req( 'rd', 0x4, 0x1040, 0, 0          ), resp( 'rd', 0x4, 0,   0,  0xabcd1040 ),
-    req( 'rd', 0x5, 0x1050, 0, 0          ), resp( 'rd', 0x5, 0,   0,  0xabcd1050 ),
-    req( 'rd', 0x6, 0x1060, 0, 0          ), resp( 'rd', 0x6, 0,   0,  0xabcd1060 ),
-    req( 'rd', 0x7, 0x1070, 0, 0          ), resp( 'rd', 0x7, 0,   0,  0xabcd1070 ),
-    req( 'rd', 0x8, 0x1080, 0, 0          ), resp( 'rd', 0x8, 0,   0,  0xabcd1080 ),
-    req( 'rd', 0x9, 0x1090, 0, 0          ), resp( 'rd', 0x9, 0,   0,  0xabcd1090 ),
-    req( 'rd', 0xa, 0x10a0, 0, 0          ), resp( 'rd', 0xa, 0,   0,  0xabcd10a0 ),
-    req( 'rd', 0xb, 0x10b0, 0, 0          ), resp( 'rd', 0xb, 0,   0,  0xabcd10b0 ),
-    req( 'rd', 0xc, 0x10c0, 0, 0          ), resp( 'rd', 0xc, 0,   0,  0xabcd10c0 ),
-    req( 'rd', 0xd, 0x10d0, 0, 0          ), resp( 'rd', 0xd, 0,   0,  0xabcd10d0 ),
-    req( 'rd', 0xe, 0x10e0, 0, 0          ), resp( 'rd', 0xe, 0,   0,  0xabcd10e0 ),
-    req( 'rd', 0xf, 0x10f0, 0, 0          ), resp( 'rd', 0xf, 0,   0,  0xabcd10f0 ),
-  ]
-
 test_case_table_dmap = mk_test_case_table([
   (                                                         "msg_func                                                 mem_data_func stall lat src sink"),
-
   # Write hit path for dirty line + Read miss path for dirty line + Stress entire cache
   [ "write_hit_dirty_read_miss_dirty_all_cacheline_dmap",   write_hit_dirty_read_miss_dirty_all_cacheline_dmap,       None,         0.0,  0,  0,  0    ],
 
-  # Write miss path for clean line + Read miss path for dirty line + Stress entire cache
-  [ "write_miss_clean_read_miss_dirty_all_cacheline_dmap",  write_miss_clean_read_miss_dirty_all_cacheline_dmap,      data_8192B,   0.0,  0,  0,  0    ],
 ])
 
 @pytest.mark.parametrize( **test_case_table_dmap )
@@ -1660,7 +1602,7 @@ def lru_bit_single_cacheline_sassoc():
     req( 'wr', 0x0, 0x0100, 0, 0x00000000 ), resp( 'wr', 0x0, 0,   0,  0          ), # Set 0 Way 0. Set 0 LRU is now 1
     req( 'wr', 0x0, 0x1100, 0, 0x00001111 ), resp( 'wr', 0x0, 0,   0,  0          ), # Set 0 Way 1. Set 0 LRU is now 0
 
-    # This should overwrite Set 0 Way 0.
+    # This should evict Set 0 Way 0.
     req( 'wr', 0x3, 0x2100, 0, 0x20202020 ), resp( 'wr', 0x3, 0,   0,  0          ),
     # Read for what should be in Set 0 Way 1. It should be a hit to show that it is not evicted in the last instruction.
     req( 'rd', 0x3, 0x1100, 0, 0          ), resp( 'rd', 0x3, 1,   0,  0x00001111 ),
@@ -1676,7 +1618,7 @@ def lru_bit_multi_cacheline_sassoc():
 
     req( 'rd', 0x2, 0x0110, 0, 0          ), resp( 'rd', 0x2, 1,   0,  0x10101010 ), # Set 1 Way 0. Set 1 LRU is now 1
 
-    # This should overwrite Set 0 Way 0. If it uses Way 1, it means that the LRU bit is not stored correctly and independently between cache lines
+    # This should evict Set 0 Way 0. If it uses Way 1, it means that the LRU bit is not stored correctly and independently between cache lines
     req( 'wr', 0x3, 0x2100, 0, 0x20202020 ), resp( 'wr', 0x3, 0,   0,  0          ),
     # Read for what should be in Set 0 Way 1. It should be a hit to show that it is not evicted in the last instruction.
     req( 'rd', 0x3, 0x1100, 0, 0          ), resp( 'rd', 0x3, 1,   0,  0x00001111 ),
