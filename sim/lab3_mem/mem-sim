@@ -35,28 +35,41 @@
 #
 #   good_spatial:
 #     a array allocated at 0x1000
-#     for ( i = 0; i < 100; i++ )
-#       for ( j = 0; i < 4; i++ )
+#     for ( i = 0; i < 100; i+=25 )
+#       for ( j = 0; j < 4; j++) )
 #         result += a[i][j];
 #
 #   bad_spatial:
 #     a array allocated at 0x1000
 #     for ( i = 0; i < 100; i++ )
-#       for ( j = 0; i < 4; i++ )
+#       for ( j = 0; j < 4; j+=25 )
 #         result += a[j][i];
 #
 #   good_temporal:
 #     a array allocated at 0x1000
-#     for ( i = 0; i < 100; i ++ )
+#     for ( i = 0; i < 97; i ++ )
 #       result += a[0]
 #   
 #   bad_temporal:
-#     a array allocated at 0x1000
-#     for ( i = 0; i < 100; i ++ )
-#       result += a[i][i]
+#    a array allocated at 0x1000
+#    for ( i = 0; i < 50; i +=32 )
+#     if(i%2 == 0):
+#       result += a[0]
+#     else:
+#       result += a[32]
 #
 #   conflict_loop:
-
+#    a array allocated at 0x1000
+#    b array allocated at 0x2000 
+#    for ( i = 0; i < 100; i ++ )
+#      result += a[0]*b[0]
+#
+#   random_access:
+#    a array allocated at 0x1000
+#    for ( i = 0; i < 100; i ++ )
+#      j = random.randint(0, 0xfff)
+#      result += a[i]*b[j]
+#
 # Hack to add project root to python path
 
 import os
@@ -332,7 +345,8 @@ def bad_temporal():
 
 #-------------------------------------------------------------------------
 # conflict_loop
-# repeated accesses to two addresses that map to the same cache line
+# repeated accesses to two addresses that map to the same cache line in direct mapped
+# but both can stay in same set, different ways in 2 way set associative so the only miss will be compulsory
 #-------------------------------------------------------------------------
 
 def conflict_loop():
