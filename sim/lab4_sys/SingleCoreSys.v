@@ -111,13 +111,15 @@ module lab4_sys_SingleCoreSys
     .dmem_respstream_val(dcache_respstream_val),
     .dmem_respstream_rdy(dcache_respstream_rdy),
 
-    .core_id(),
-    .commit_inst(),
-    .stats_en()
+    .core_id(0),
+    .commit_inst(commit_inst),
+    .stats_en(stats_en)
   );
 
   //Instatiating the cache- for Instruction Cache
-  lab3_mem_CacheAlt icache (
+  lab3_mem_CacheAlt  #(
+    .p_num_banks(1) // Set number of banks to 1
+  ) icache (
     .clk               (clk),
     .reset             (reset),
 
@@ -139,7 +141,9 @@ module lab4_sys_SingleCoreSys
   );
 
   //Instatiating the cache- for Data cache
-  lab3_mem_CacheAlt dcache (
+  lab3_mem_CacheAlt #(
+    .p_num_banks(1) // Set number of banks to 1
+  ) dcache (
     .clk               (clk),
     .reset             (reset),
 
