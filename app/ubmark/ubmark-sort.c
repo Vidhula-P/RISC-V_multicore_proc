@@ -10,33 +10,12 @@
 //------------------------------------------------------------------------
 
 //function to calculate log as math library can't be used
-double my_log(double x) {
-    double result = 0.0;
-    double term = 1.0;
-    double power = 1.0;
-
-    if (x <= 0) {
-        return -1.0; // Error: log of non-positive number
+int my_log(long x) {
+    int result = 0;
+    while (x > 1) {
+        x /= 2;
+        result++;
     }
-
-    // Adjust x to be closer to 1 for faster convergence
-    while (x > 2.0) {
-        x /= 2.0;
-        result += 0.69314718056; // ln(2)
-    }
-    while (x < 0.5) {
-        x *= 2.0;
-        result -= 0.69314718056; // ln(2)
-    }
-
-    // Taylor series approximation
-    x -= 1.0;
-    for (int i = 1; i < 20; i++) {
-        power *= x;
-        term *= -1.0 / i;
-        result += power * term;
-    }
-
     return result;
 }
 
@@ -159,7 +138,7 @@ void IntrosortUtil(int arr[], int *begin, int *end, int depthLimit)
 void Introsort(int arr[], int *begin, int *end) 
 { 
     long size = (long)(end - begin) + 1;
-    int depthLimit = 2 * (int)(my_log((double)size));
+    int depthLimit = 2 * (int)(my_log(size));
     IntrosortUtil(arr, begin, end, depthLimit); 
 }
 
