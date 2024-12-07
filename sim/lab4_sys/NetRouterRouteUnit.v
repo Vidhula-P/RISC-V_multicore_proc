@@ -42,6 +42,33 @@ module lab4_sys_NetRouterRouteUnit
   // Implement route unit logic
   //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+  // Local Parameters
+  localparam NUM_PORTS = 4;  // We have 4 processor, hence 4 ports
+
+  // Determine clockwise port
+  logic [1:0] next_port;
+  assign next_port = (router_id + 1) % NUM_PORTS;
+
+  // Connect input stream to the appropriate output port
+  always_comb begin
+    // Default values
+    foreach (ostream_msg[i]) begin
+      ostream_msg[i] = 1'b0;
+    end
+    foreach (ostream_val[i]) begin
+      ostream_val[i] = 1'b0;
+    end
+    istream_rdy = 1'b0;
+
+    // Route to clockwise port if ready
+    if (istream_val && ostream_rdy[next_port]) begin
+      ostream_msg[next_port] = istream_msg;
+      ostream_val[next_port] = 1'b1;
+      istream_rdy = 1'b1; // Downstream is ready
+    end
+  end
+
+
   //----------------------------------------------------------------------
   // Line Tracing
   //----------------------------------------------------------------------

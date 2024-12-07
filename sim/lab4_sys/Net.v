@@ -46,6 +46,119 @@ module lab4_sys_Net
   // Implement ring network with four routers
   //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
+  //Instantiating routers
+  // Router 0
+  lab4_sys_NetRouter#(p_msg_nbits) router0 (
+    .clk            (clk),
+    .reset          (reset),
+    .router_id      (2'd0),
+    .istream_msg    ({istream_msg[0], channels_ccw_msg[1], channels_cw_msg[3]}),
+    .istream_val    ({istream_val[0], channels_ccw_val[1], channels_cw_val[3]}),
+    .istream_rdy    ({istream_rdy[0], channels_ccw_rdy[1], channels_cw_rdy[3]}),
+    .ostream_msg    ({ostream_msg[0], channels_cw_msg[0], channels_ccw_msg[0]}),
+    .ostream_val    ({ostream_val[0], channels_cw_val[0], channels_ccw_val[0]}),
+    .ostream_rdy    ({ostream_rdy[0], channels_cw_rdy[0], channels_ccw_rdy[0]})
+  );
+
+  // Router 1
+  lab4_sys_NetRouter#(p_msg_nbits) router1 (
+    .clk            (clk),
+    .reset          (reset),
+    .router_id      (2'd1),
+    .istream_msg    ({istream_msg[1], channels_ccw_msg[2], channels_cw_msg[0]}),
+    .istream_val    ({istream_val[1], channels_ccw_val[2], channels_cw_val[0]}),
+    .istream_rdy    ({istream_rdy[1], channels_ccw_rdy[2], channels_cw_rdy[0]}),
+    .ostream_msg    ({ostream_msg[1], channels_cw_msg[1], channels_ccw_msg[1]}),
+    .ostream_val    ({ostream_val[1], channels_cw_val[1], channels_ccw_val[1]}),
+    .ostream_rdy    ({ostream_rdy[1], channels_cw_rdy[1], channels_ccw_rdy[1]})
+  );
+
+  // Router 2
+  lab4_sys_NetRouter#(p_msg_nbits) router2 (
+    .clk            (clk),
+    .reset          (reset),
+    .router_id      (2'd2),
+    .istream_msg    ({istream_msg[2], channels_ccw_msg[3], channels_cw_msg[1]}),
+    .istream_val    ({istream_val[2], channels_ccw_val[3], channels_cw_val[1]}),
+    .istream_rdy    ({istream_rdy[2], channels_ccw_rdy[3], channels_cw_rdy[1]}),
+    .ostream_msg    ({ostream_msg[2], channels_cw_msg[2], channels_ccw_msg[2]}),
+    .ostream_val    ({ostream_val[2], channels_cw_val[2], channels_ccw_val[2]}),
+    .ostream_rdy    ({ostream_rdy[2], channels_cw_rdy[2], channels_ccw_rdy[2]})
+  );
+
+  // Router 3
+  lab4_sys_NetRouter#(p_msg_nbits) router3 (
+    .clk            (clk),
+    .reset          (reset),
+    .router_id      (2'd3),
+    .istream_msg    ({istream_msg[3], channels_ccw_msg[0], channels_cw_msg[2]}),
+    .istream_val    ({istream_val[3], channels_ccw_val[0], channels_cw_val[2]}),
+    .istream_rdy    ({istream_rdy[3], channels_ccw_rdy[0], channels_cw_rdy[2]}),
+    .ostream_msg    ({ostream_msg[3], channels_cw_msg[3], channels_ccw_msg[3]}),
+    .ostream_val    ({ostream_val[3], channels_cw_val[3], channels_ccw_val[3]}),
+    .ostream_rdy    ({ostream_rdy[3], channels_cw_rdy[3], channels_ccw_rdy[3]})
+  );
+
+  //clockwise connections for output message
+  assign channels_cw_msg[0] = ostream_msg[1];  // Router 0 -> Router 1
+  assign channels_cw_msg[1] = ostream_msg[2];  // Router 1 -> Router 2
+  assign channels_cw_msg[2] = ostream_msg[3];  // Router 2 -> Router 3
+  assign channels_cw_msg[3] = ostream_msg[0];  // Router 3 -> Router 0
+
+  //counterclockwise connections for output message
+  assign channels_ccw_msg[0] = ostream_msg[3];  // Router 0 <- Router 3
+  assign channels_ccw_msg[1] = ostream_msg[0];  // Router 1 <- Router 0
+  assign channels_ccw_msg[2] = ostream_msg[1];  // Router 2 <- Router 1
+  assign channels_ccw_msg[3] = ostream_msg[2];  // Router 3 <- Router 2
+
+  //connections for input message
+  // Connect Router 0 input streams
+  assign router0.istream_msg[0] = istream_msg[0];
+  assign router0.istream_val[0] = istream_val[0];
+  // Connect Router 1 input streams
+  assign router1.istream_msg[0] = istream_msg[1];
+  assign router1.istream_val[0] = istream_val[1];
+  // Connect Router 2 input streams
+  assign router2.istream_msg[0] = istream_msg[2];
+  assign router2.istream_val[0] = istream_val[2];
+  // Connect Router 3 input streams
+  assign router3.istream_msg[0] = istream_msg[3];
+  assign router3.istream_val[0] = istream_val[3];
+
+  //connections for output message
+  // Connect Router 0 output streams
+  assign ostream_msg[0] = router0.ostream_msg[0];
+  assign ostream_val[0] = router0.ostream_val[0];
+  assign ostream_msg[1] = router0.ostream_msg[1];
+  assign ostream_val[1] = router0.ostream_val[1];
+  assign ostream_msg[3] = router0.ostream_msg[3];
+  assign ostream_val[3] = router0.ostream_val[3];
+
+  // Connect Router 1 output streams
+  assign ostream_msg[1] = router1.ostream_msg[0];
+  assign ostream_val[1] = router1.ostream_val[0];
+  assign ostream_msg[2] = router1.ostream_msg[1];
+  assign ostream_val[2] = router1.ostream_val[1];
+  assign ostream_msg[0] = router1.ostream_msg[3];
+  assign ostream_val[0] = router1.ostream_val[3];
+
+  // Connect Router 2 output streams
+  assign ostream_msg[2] = router2.ostream_msg[0];
+  assign ostream_val[2] = router2.ostream_val[0];
+  assign ostream_msg[3] = router2.ostream_msg[1];
+  assign ostream_val[3] = router2.ostream_val[1];
+  assign ostream_msg[1] = router2.ostream_msg[3];
+  assign ostream_val[1] = router2.ostream_val[3];
+
+  // Connect Router 3 output streams
+  assign ostream_msg[3] = router3.ostream_msg[0];
+  assign ostream_val[3] = router3.ostream_val[0];
+  assign ostream_msg[0] = router3.ostream_msg[1];
+  assign ostream_val[0] = router3.ostream_val[1];
+  assign ostream_msg[2] = router3.ostream_msg[3];
+  assign ostream_val[2] = router3.ostream_val[3];
+
+
   //----------------------------------------------------------------------
   // Line Tracing
   //----------------------------------------------------------------------
