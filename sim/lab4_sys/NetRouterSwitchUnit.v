@@ -29,41 +29,35 @@ module lab4_sys_NetRouterSwitchUnit
   input  logic                   ostream_rdy
 );
 
-  //''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  // Implement switch unit logic
-  //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
   logic [1:0] selected_input;    // Tracks the selected input stream
   logic [p_msg_nbits-1:0] selected_msg; // Selected message to forward
 
-  // Arbitration logic- Fixed priority 0 > 1 > 2
-  always_comb begin
-    // Default values
-    selected_input = 2'b00;
-    selected_msg = '0;
-    ostream_val = 0;
+  logic [1:0] input_select; // input selector
+  logic       input_val;
+
+  assign input_val = (istream_val[0] || istream_val[1] || istream_val[2]);
+
+  // Arbiter (Fixed Priority 1 > 2 > 0)
+  always @(*) begin
+    input_select = 0;
+
+    if      (istream_val[1]) input_select = 2'd1;
+    else if (istream_val[2]) input_select = 2'd2;
+    else if (istream_val[0]) input_select = 2'd0;
+  end
+
+  // Forward message from input to output
+  always @(*) begin
     foreach (istream_rdy[i]) begin
       istream_rdy[i] = 0;
-    end    
-
-    if (istream_val[0]) begin
-      selected_input = 2'b00;
-      selected_msg = istream_msg[0];
-    end else if (istream_val[1]) begin
-      selected_input = 2'b01;
-      selected_msg = istream_msg[1];
-    end else if (istream_val[2]) begin
-      selected_input = 2'b10;
-      selected_msg = istream_msg[2];
     end
+    ostream_msg = 'b0;
+    ostream_val = 1'b0;
 
-    // Forward message if output stream is ready
-    if (ostream_rdy && (istream_val[selected_input])) begin
-      ostream_val = 1;
-      ostream_msg = selected_msg;
-      istream_rdy[selected_input] = 1;
-    end else begin
-      ostream_msg = '0;
+    if (input_val) begin
+      istream_rdy[input_select] = ostream_rdy;
+      ostream_msg = istream_msg[input_select];
+      ostream_val = 1'b1;
     end
   end
 

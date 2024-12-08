@@ -38,36 +38,31 @@ module lab4_sys_NetRouterRouteUnit
   net_msg_hdr_t istream_msg_hdr;
   assign istream_msg_hdr = istream_msg[`VC_NET_MSGS_HDR(p_msg_nbits)];
 
-  //''' LAB TASK '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  // Implement route unit logic
-  //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  // // Switch 0 for output connection
+  // // Switch 1 for clockwise connection
+  // // Switch 2 for anticlockwise connection
 
-  // Local Parameters
-  localparam NUM_PORTS = 4;  // We have 4 processor, hence 4 ports
-
-  // Determine clockwise port
-  logic [1:0] next_port;
-  assign next_port = (router_id + 1) % NUM_PORTS;
-
-  // Connect input stream to the appropriate output port
-  always_comb begin
-    // Default values
+  always @(*) begin
+    istream_rdy = 1'b0;
     foreach (ostream_msg[i]) begin
-      ostream_msg[i] = 1'b0;
+      ostream_msg[i] = 'b0;
     end
     foreach (ostream_val[i]) begin
       ostream_val[i] = 1'b0;
     end
-    istream_rdy = 1'b0;
-
-    // Route to clockwise port if ready
-    if (istream_val && ostream_rdy[next_port]) begin
-      ostream_msg[next_port] = istream_msg;
-      ostream_val[next_port] = 1'b1;
-      istream_rdy = 1'b1; // Downstream is ready
+    if ( istream_val ) begin
+      if ( istream_msg_hdr.dest == router_id ) begin
+        istream_rdy = ostream_rdy[0];
+        ostream_val[0] = 1;
+        ostream_msg[0] = istream_msg;
+      end
+      else begin
+        istream_rdy = ostream_rdy[1];
+        ostream_val[1] = 1;
+        ostream_msg[1] = istream_msg;
+      end
     end
   end
-
 
   //----------------------------------------------------------------------
   // Line Tracing
