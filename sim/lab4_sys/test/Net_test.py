@@ -11,6 +11,8 @@ from pymtl3.stdlib.stream import StreamSourceFL, StreamSinkFL
 from lab4_sys.NetMsg import mk_net_msg
 from lab4_sys.Net import Net
 
+import random
+
 #-------------------------------------------------------------------------
 # Message Types
 #-------------------------------------------------------------------------
@@ -150,9 +152,74 @@ all_to_dest3 = [
   NetMsgType( 3,   3,   0x13, 0x13131313 ),
 ]
 
-#''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Add more directed and random tests
-#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+all_to_dest3_rotate0 = [
+  #           src  dest opaq  payload
+  NetMsgType( 1,   3,   0x10, 0x10101010 ),
+  NetMsgType( 2,   3,   0x11, 0x11111111 ),
+  NetMsgType( 3,   3,   0x12, 0x12121212 ),
+  NetMsgType( 0,   3,   0x13, 0x13131313 ),
+]
+
+all_to_dest3_rotate1 = [
+  #           src  dest opaq  payload
+  NetMsgType( 2,   3,   0x10, 0x10101010 ),
+  NetMsgType( 3,   3,   0x11, 0x11111111 ),
+  NetMsgType( 0,   3,   0x12, 0x12121212 ),
+  NetMsgType( 1,   3,   0x13, 0x13131313 ),
+]
+
+all_to_dest3_rotate2 = [
+  #           src  dest opaq  payload
+  NetMsgType( 3,   3,   0x10, 0x10101010 ),
+  NetMsgType( 0,   3,   0x11, 0x11111111 ),
+  NetMsgType( 1,   3,   0x12, 0x12121212 ),
+  NetMsgType( 2,   3,   0x13, 0x13131313 ),
+]
+
+all_from_src0 = [
+  #           src  dest opaq  payload
+  NetMsgType( 0,   0,   0x10, 0x10101010 ),
+  NetMsgType( 0,   1,   0x11, 0x11111111 ),
+  NetMsgType( 0,   2,   0x12, 0x12121212 ),
+  NetMsgType( 0,   3,   0x13, 0x13131313 ),
+]
+
+all_from_src1 = [
+  #           src  dest opaq  payload
+  NetMsgType( 1,   3,   0x10, 0x10101010 ),
+  NetMsgType( 1,   2,   0x11, 0x11111111 ),
+  NetMsgType( 1,   1,   0x12, 0x12121212 ),
+  NetMsgType( 1,   0,   0x13, 0x13131313 ),
+]
+
+all_from_src2 = [
+  #           src  dest opaq  payload
+  NetMsgType( 2,   1,   0x10, 0x10101010 ),
+  NetMsgType( 2,   0,   0x11, 0x11111111 ),
+  NetMsgType( 2,   2,   0x12, 0x12121212 ),
+  NetMsgType( 2,   3,   0x13, 0x13131313 ),
+]
+
+all_from_src3 = [
+  #           src  dest opaq  payload
+  NetMsgType( 3,   1,   0x10, 0x10101010 ),
+  NetMsgType( 3,   2,   0x11, 0x11111111 ),
+  NetMsgType( 3,   1,   0x12, 0x12121212 ),
+  NetMsgType( 3,   2,   0x13, 0x13131313 ),
+]
+
+# Tests with random dest and larger number of messages
+
+large_rand_test = []
+
+curr_payload = 0x10101010
+for _ in range(50):
+    rand_src = random.randint(0, 2)
+    rand_dest = random.randint(0, 3)
+    rand_opaq = random.randint(0, 16)
+    curr_payload += 1
+    large_rand_test.append(NetMsgType( rand_src,   rand_dest,   rand_opaq, curr_payload ))
+
 
 #-------------------------------------------------------------------------
 # Test Case Table
@@ -169,8 +236,39 @@ test_case_table = mk_test_case_table([
   [ "all_to_dest1",                   all_to_dest1,        0,  0,  'fixed'  ],
   [ "all_to_dest2",                   all_to_dest2,        0,  0,  'fixed'  ],
   [ "all_to_dest3",                   all_to_dest3,        0,  0,  'fixed'  ],
+  [ "all_to_dest3_rotate0",           all_to_dest3_rotate0,0,  0,  'fixed'  ],
+  [ "all_to_dest3_rotate1",           all_to_dest3_rotate1,0,  0,  'fixed'  ],
+  [ "all_to_dest3_rotate2",           all_to_dest3_rotate2,0,  0,  'fixed'  ],
+  [ "all_from_src0",                  all_from_src0,       0,  0,  'fixed'  ],
+  [ "all_from_src1",                  all_from_src1,       0,  0,  'fixed'  ],
+  [ "all_from_src2",                  all_from_src2,       0,  0,  'fixed'  ],
+  [ "all_from_src3",                  all_from_src3,       0,  0,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     0,  0,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     0,  0,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     0,  0,  'fixed'  ],
 
-  #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  # Directed and Random Delays
+  [ "one",                            one,                 4,  0,  'fixed'  ],
+  [ "rotate0",                        rotate0,             0,  5,  'fixed'  ],
+  [ "rotate1",                        rotate1,             6,  0,  'fixed'  ],
+  [ "rotate2",                        rotate2,             0,  0,  'random'  ],
+  [ "rotate3",                        rotate3,             3,  3,  'fixed'  ],
+  [ "all_to_dest0",                   all_to_dest0,        10,  0,  'fixed'  ],
+  [ "all_to_dest1",                   all_to_dest1,        0,  18,  'fixed'  ],
+  [ "all_to_dest2",                   all_to_dest2,        6,  0,  'fixed'  ],
+  [ "all_to_dest3",                   all_to_dest3,        0,  0,  'random'  ],
+  [ "all_to_dest3_rotate0",           all_to_dest3_rotate0,8,  8,  'fixed'  ],
+  [ "all_to_dest3_rotate1",           all_to_dest3_rotate1,1,  5,  'fixed'  ],
+  [ "all_to_dest3_rotate2",           all_to_dest3_rotate2,0,  0,  'fixed'  ],
+  [ "all_from_src0",                  all_from_src0,       4,  0,  'fixed'  ],
+  [ "all_from_src1",                  all_from_src1,       0,  1,  'fixed'  ],
+  [ "all_from_src2",                  all_from_src2,       5,  0,  'fixed'  ],
+  [ "all_from_src3",                  all_from_src3,       5,  9,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     5,  0,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     0,  7,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     2,  8,  'fixed'  ],
+  [ "large_rand_test",                large_rand_test,     0,  0,  'random'  ],
+  [ "large_rand_test",                large_rand_test,     0,  0,  'random'  ],
 
 ])
 

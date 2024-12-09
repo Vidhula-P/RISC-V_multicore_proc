@@ -11,6 +11,8 @@ from pymtl3.stdlib.stream import StreamSourceFL, StreamSinkFL
 from lab4_sys.NetMsg import mk_net_msg
 from lab4_sys.NetRouterSwitchUnit import NetRouterSwitchUnit
 
+import random
+
 #-------------------------------------------------------------------------
 # Message Types
 #-------------------------------------------------------------------------
@@ -91,9 +93,9 @@ one = [
 
 three = [
   #           src  dest opaq  payload
-  NetMsgType( 1,   2,   0x11, 0x11111111 ),
-  NetMsgType( 2,   1,   0x12, 0x12121212 ),
-  NetMsgType( 0,   3,   0x10, 0x10101010 ),
+  NetMsgType( 1,   0,   0x11, 0x11111111 ),
+  NetMsgType( 2,   0,   0x12, 0x12121212 ),
+  NetMsgType( 0,   0,   0x10, 0x10101010 ),
 ]
 
 three_diff_dest = [
@@ -103,21 +105,68 @@ three_diff_dest = [
   NetMsgType( 0,   3,   0x10, 0x10101010 ),
 ]
 
-#''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-# Change above tests if necessary; add more directed tests
-#'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+# Tests with rotated order of destinations
+
+three_diff_dest_rotated0 = [
+  #           src  dest opaq  payload
+  NetMsgType( 1,   1,   0x11, 0x11111111 ),
+  NetMsgType( 2,   3,   0x12, 0x12121212 ),
+  NetMsgType( 0,   2,   0x10, 0x10101010 ),
+]
+
+three_diff_dest_rotated1 = [
+  #           src  dest opaq  payload
+  NetMsgType( 1,   1,   0x11, 0x11111111 ),
+  NetMsgType( 2,   3,   0x12, 0x12121212 ),
+  NetMsgType( 0,   2,   0x10, 0x10101010 ),
+]
+
+three_diff_dest_rotated2 = [
+  #           src  dest opaq  payload
+  NetMsgType( 1,   3,   0x11, 0x11111111 ),
+  NetMsgType( 2,   2,   0x12, 0x12121212 ),
+  NetMsgType( 0,   1,   0x10, 0x10101010 ),
+]
+
+# Tests with random dest and larger number of messages
+
+large_rand_dest = []
+
+curr_payload = 0x10101010
+for i in [1, 2, 0]:
+  for _ in range(50):
+    rand_dest = random.randint(0, 3)
+    rand_opaq = random.randint(0, 16)
+    curr_payload += 1
+    large_rand_dest.append(NetMsgType( i,   rand_dest,   rand_opaq, curr_payload ))
 
 #-------------------------------------------------------------------------
 # Test Case Table
 #-------------------------------------------------------------------------
 
 test_case_table = mk_test_case_table([
-  (                               "msgs           src_delay sink_delay delay_mode"),
-  [ "one",                         one,                  0,  0,  'fixed'  ],
-  [ "three",                       three,                0,  0,  'fixed'  ],
-  [ "three_diff_dest",             three_diff_dest,      0,  0,  'fixed'  ],
+  (                               "msgs                     src_delay sink_delay delay_mode"),
+  [ "one",                         one,                           0,  0,  'fixed'  ],
+  [ "three",                       three,                         0,  0,  'fixed'  ],
+  [ "three_diff_dest",             three_diff_dest,               0,  0,  'fixed'  ],
+  [ "three_diff_dest_rotated0",    three_diff_dest_rotated0,      0,  0,  'fixed'  ],
+  [ "three_diff_dest_rotated1",    three_diff_dest_rotated0,      0,  0,  'fixed'  ],
+  [ "three_diff_dest_rotated2",    three_diff_dest_rotated0,      0,  0,  'fixed'  ],
+  [ "large_rand_dest",             large_rand_dest,               0,  0,  'fixed'  ],
 
-  #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  # Directed and random src sink delays
+  [ "delay_one",                         one,                           9,  0,  'fixed'  ],
+  [ "delay_three",                       three,                         0,  3,  'fixed'  ],
+  [ "delay_three_diff_dest",             three_diff_dest,               2,  0,  'fixed'  ],
+  [ "delay_three_diff_dest_rotated0",    three_diff_dest_rotated0,      3,  6,  'fixed'  ],
+  [ "delay_three_diff_dest_rotated1",    three_diff_dest_rotated0,      0,  1,  'random'  ],
+  [ "delay_three_diff_dest_rotated2",    three_diff_dest_rotated0,      2,  0,  'fixed'  ],
+  [ "delay_large_rand_dest",             large_rand_dest,               0,  2,  'fixed'  ],
+  [ "delay_large_rand_dest",             large_rand_dest,               3,  3,  'fixed'  ],
+  [ "delay_large_rand_dest",             large_rand_dest,               3,  5,  'fixed'  ],
+  [ "delay_large_rand_dest",             large_rand_dest,               0,  0,  'random'  ],
+  [ "delay_large_rand_dest",             large_rand_dest,               0,  0,  'random'  ],
+  [ "delay_large_rand_dest",             large_rand_dest,               0,  0,  'random'  ],
 
 ])
 
