@@ -1,7 +1,6 @@
 #include "mtbmark-sort.h"
 #include "ece4750.h"
 #include "ubmark-sort.h"
-#include <string.h>
 
 // Argument structure (modified to fit sorting better)
 typedef struct
@@ -44,7 +43,9 @@ void work(void* arg_vptr)
 
   // Perform sorting
   InsertionSort(src, first, last - 1); // `last - 1` since `last` is exclusive
-  memcpy(dst, src + first, (size_t)((last - first)*(int)sizeof(int)));
+  for (int i = first; i < last; i++) {
+    dst[i - first] = src[i];
+  }
 }
 
 //Mergesort algorithm
