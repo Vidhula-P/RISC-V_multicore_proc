@@ -241,6 +241,81 @@ void test_case_10_repeat()
 // }
 
 //------------------------------------------------------------------------
+// Test 12- Each sub array will only have a single element
+//------------------------------------------------------------------------
+
+void test_case_12_single()
+{
+  ECE4750_CHECK( L"test_case_12_single" );
+
+  int a[]     = { 3, 5, 4, 2};
+  int a_ref[] = { 2, 3, 4, 5};
+
+  mtbmark_sort( a, 4 );
+
+  for ( int i = 0; i < 4; i++ )
+    ECE4750_CHECK_INT_EQ( a[i] , a_ref[i] );
+
+  ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
+}
+
+//------------------------------------------------------------------------
+// Test 13- Empty array
+//------------------------------------------------------------------------
+
+void test_case_13_empty()
+{
+  ECE4750_CHECK( L"test_case_13_empty" );
+
+  int a[]     = { };
+  int a_ref[] = { };
+
+  mtbmark_sort( a, 0 );
+
+  ECE4750_CHECK_TRUE( sizeof(a_ref) == 0 );
+
+  ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
+}
+
+//------------------------------------------------------------------------
+// Test 14- Duplicate Values Across Subarrays
+//------------------------------------------------------------------------
+
+void test_case_14_duplicate()
+{
+  ECE4750_CHECK( L"test_case_14_duplicate" );
+
+  int a[]     = { 5, 5, 5, 5, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1 };
+  int a_ref[] = { 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 5, 5, 5, 5 };
+
+  mtbmark_sort( a, 16 );
+
+  for ( int i = 0; i < 16; i++ )
+    ECE4750_CHECK_INT_EQ( a[i] , a_ref[i] );
+
+  ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
+}
+
+//------------------------------------------------------------------------
+// Test 15- Handling of mixed order within subarrays
+//------------------------------------------------------------------------
+
+void test_case_15_mixed()
+{
+  ECE4750_CHECK( L"test_case_15_mixed" );
+
+  int a[]     = { 30, 10, 20, 40, 5, 15, 25, 35, 50, 60, 45, 55, 80, 75, 65, 70 };
+  int a_ref[] = {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80 };
+
+  mtbmark_sort( a, 16 );
+
+  for ( int i = 0; i < 16; i++ )
+    ECE4750_CHECK_INT_EQ( a[i] , a_ref[i] );
+
+  ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
+}
+
+//------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------
 
@@ -259,7 +334,11 @@ int main( int argc, char** argv )
   else if ( __n == 9 ) test_case_9_very_long_dataset();
   else if ( __n == 10) test_case_10_repeat();
   // else if ( __n == 11) test_11_random_testing();
-  else ece4750_wprintf( L"Error: Invalid test case number %d!\nChoose between 1 and 11.", __n );
+  else if ( __n == 12) test_case_12_single();
+  else if ( __n == 13) test_case_13_empty();
+  else if ( __n == 14) test_case_14_duplicate();
+  else if ( __n == 15) test_case_15_mixed();
+  else ece4750_wprintf( L"Error: Invalid test case number %d!\nChoose between 1 and 15.", __n );
 
   ece4750_wprintf( L"\n\n" );
   return ece4750_check_status;
