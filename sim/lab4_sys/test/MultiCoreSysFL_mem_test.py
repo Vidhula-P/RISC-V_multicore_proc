@@ -39,16 +39,19 @@ class Tests:
 
   @pytest.mark.parametrize( "name,test", [
     asm_test( inst_mem_mcore.gen_basic_test     ),
-
-    #''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    # Add more rows to the test case table to test more complicated
-    # scenarios.
-    #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    asm_test( inst_mem_mcore.add_diff_cores ),
+    asm_test( inst_mem_mcore.lw_sw_multicore ),
+    asm_test( inst_mem_mcore.same_cache_line ),
+    asm_test( inst_mem_mcore.adjacent_addr ),
+    asm_test( inst_mem_mcore.alt_read_write ),
+    asm_test( inst_mem_mcore.alt_write_read ),
+    asm_test( inst_mem_mcore.non_aligned ),
   ])
   def test_mem_mcore( s, name, test ):
     run_test( s.SysType, test, cmdline_opts=s.__class__.cmdline_opts )
+    
+  # Random stall and delay
 
-  #''' LAB TASK ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  # random stall and delay
-  #'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+  def test_mem_mcore_delays( s ):
+    run_test( s.SysType, inst_mem_mcore.gen_basic_test, delays=True,
+              cmdline_opts=s.__class__.cmdline_opts )
