@@ -26,11 +26,11 @@ class MultiCoreSysFL( Component ):
     s.dmem          = MemRequesterIfc( MemReqType, MemRespType )
 
     s.stats_en      = OutPort()
-    s.commit_inst   = OutPort()
-    s.icache_access = OutPort()
-    s.icache_miss   = OutPort()
-    s.dcache_access = OutPort()
-    s.dcache_miss   = OutPort()
+    s.commit_inst   = OutPort(4)
+    s.icache_access = OutPort(4)
+    s.icache_miss   = OutPort(4)
+    s.dcache_access = OutPort(4)
+    s.dcache_miss   = OutPort(4)
 
     # Instantiate four processors, icaches, and dcaches
 
@@ -74,7 +74,10 @@ class MultiCoreSysFL( Component ):
     # Bring the stats enable up to the top level
 
     s.stats_en      //= s.procs[0].stats_en
-    s.commit_inst   //= s.procs[0].commit_inst
+    s.commit_inst[0] //= s.procs[0].commit_inst
+    s.commit_inst[1] //= s.procs[1].commit_inst
+    s.commit_inst[2] //= s.procs[2].commit_inst
+    s.commit_inst[3] //= s.procs[3].commit_inst
     s.icache_access //= 0
     s.icache_miss   //= 0
     s.dcache_access //= 0

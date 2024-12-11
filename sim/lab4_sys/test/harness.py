@@ -202,7 +202,7 @@ class MultiCoreTestHarness(Component):
   #-----------------------------------------------------------------------
 
   def construct( s, Sys ):
-    s.commit_inst = OutPort()
+    s.commit_inst = OutPort(4)
 
     s.srcs  = [ StreamSourceFL( Bits32, [] ) for _ in range(4) ]
     s.sinks = [ StreamSinkFL( Bits32, [] )   for _ in range(4) ]
