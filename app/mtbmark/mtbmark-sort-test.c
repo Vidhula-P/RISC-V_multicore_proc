@@ -56,7 +56,7 @@ void test_case_2_sort_negative()
 
   for ( int i = 0; i < 7; i++ )
     ECE4750_CHECK_INT_EQ( a[i] , a_ref[i] );
-    
+
   ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
 }
 
@@ -106,7 +106,7 @@ void test_case_5_large_neg()
 {
   ECE4750_CHECK( L"test_case_5_large_neg" );
 
-  int a[]     = { -7643, 0, -27482, -00056, -9572, -32767 };
+  int a[]     = { -7643, 0, -27482, -56, -9572, -32767 };
   int a_ref[] = { -32767, -27482, -9572, -7643, -56, 0};
 
   mtbmark_sort( a, 6 );
@@ -216,29 +216,27 @@ void test_case_10_repeat()
 
 //Generating a random array and pchecking if sorted
 
-// void test_11_random_testing()
-// {
-//   ECE4750_CHECK( L"test_11_random_testing");
-//   int a[10]; //An array with 10 elements
+void test_11_random_testing()
+{
+  ECE4750_CHECK( L"test_11_random_testing");
+  int a[10]; //An array with 10 elements
 
-//   // bool test = true;
+  // Generate random values for the array
+  for (int i = 0; i < 10; i++) {
+    a[i] = ece4750_rand() ; // Random numbers between 0 and 99
+  }
+  mtbmark_sort( a, 10 );
 
-//   // Generate random values for the array
-//   for (int i = 0; i < 10; i++) {
-//     a[i] = rand() % 100; // Random numbers between 0 and 99
-//   }
-//   mtbmark_sort( a, 10 );
-
-//   for (int i = 1; i < 10; i++) {
-//     if(a[i] < a[i-1]){
-//       ECE4750_CHECK_TRUE(false);
-//       ece4750_wprintf(L"a[i] = %d", a[i]) ;
-//     }
-//     ECE4750_CHECK_TRUE(true);
-//     ece4750_wprintf(L"a[i] = %d", a[i]) ;
-//   }
-//   ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
-// }
+  for (int i = 1; i < 10; i++) {
+    if(a[i] < a[i-1]){
+      ECE4750_CHECK_TRUE(false);
+      ece4750_wprintf(L"a[i] = %d", a[i]) ;
+    }
+    ECE4750_CHECK_TRUE(true);
+    ece4750_wprintf(L"a[i] = %d", a[i]) ;
+  }
+  ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
+}
 
 //------------------------------------------------------------------------
 // Test 12- Each sub array will only have a single element
@@ -333,7 +331,7 @@ int main( int argc, char** argv )
   else if ( __n == 8 ) test_case_8_sorted_asc();
   else if ( __n == 9 ) test_case_9_very_long_dataset();
   else if ( __n == 10) test_case_10_repeat();
-  // else if ( __n == 11) test_11_random_testing();
+  else if ( __n == 11) test_11_random_testing();
   else if ( __n == 12) test_case_12_single();
   else if ( __n == 13) test_case_13_empty();
   else if ( __n == 14) test_case_14_duplicate();
