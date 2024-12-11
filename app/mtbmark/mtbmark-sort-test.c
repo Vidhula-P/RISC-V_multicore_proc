@@ -314,6 +314,25 @@ void test_case_15_mixed()
 }
 
 //------------------------------------------------------------------------
+// Test 16 - Empty and nonempty subarray
+//------------------------------------------------------------------------
+
+void test_case_16_empty_nonempty()
+{
+  ECE4750_CHECK( L"test_case_16_empty_nonempty" );
+
+  int a[]     = { 1, -5 };
+  int a_ref[] = {-5, 1 };
+
+  mtbmark_sort( a, 2 );
+
+  for ( int i = 0; i < 2; i++ )
+    ECE4750_CHECK_INT_EQ( a[i] , a_ref[i] );
+
+  ECE4750_CHECK_INT_EQ( ece4750_get_heap_usage(), 0 );
+}
+
+//------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------
 
@@ -336,7 +355,8 @@ int main( int argc, char** argv )
   else if ( __n == 13) test_case_13_empty();
   else if ( __n == 14) test_case_14_duplicate();
   else if ( __n == 15) test_case_15_mixed();
-  else ece4750_wprintf( L"Error: Invalid test case number %d!\nChoose between 1 and 15.", __n );
+  else if ( __n == 16) test_case_16_empty_nonempty();
+  else ece4750_wprintf( L"Error: Invalid test case number %d!\nChoose between 1 and 16.", __n );
 
   ece4750_wprintf( L"\n\n" );
   return ece4750_check_status;
